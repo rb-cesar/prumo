@@ -17,4 +17,22 @@ no `CLAUDE.md`.
 
 ## Como rodar e testar
 
-A escrever na fatia 0 (fundação do projeto).
+Precisa de Node 24 e pnpm 10.
+
+```bash
+pnpm install
+pnpm dev          # abre o app no navegador
+pnpm check        # lint + tipos + testes (o mesmo que o CI roda)
+pnpm test:watch   # testes em modo contínuo
+pnpm build        # gera dist/
+```
+
+### Android
+
+Precisa do JDK 21 (`JAVA_HOME`) e do Android SDK (`ANDROID_HOME`, com a plataforma 36). O Capacitor 8
+gera um projeto que exige Java 21; o JDK 17 não serve.
+
+```bash
+pnpm build && pnpm exec cap sync android   # copia dist/ para o projeto Android
+cd android && ./gradlew assembleDebug      # gera o APK de teste
+```
