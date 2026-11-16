@@ -1,7 +1,7 @@
 # Prumo
 
 App mobile único de pendências e finanças pessoais, 100% local (React + Vite + Capacitor + SQLite).
-Decisões de stack e estrutura: `doc/adr/0001-stack-e-estrutura.md`. Protótipo visual: `prumo.html` (110 KB, ~30 mil tokens): **não abra, nem em parte, a menos que o dono peça.** Se pedir, leia só o trecho da tela em questão.
+Decisões de stack e estrutura: `doc/adr/0001-stack-e-estrutura.md`. Protótipo visual: `prumo.html` (110 KB, ~30 mil tokens): **não abra, nem em parte, a menos que o dono peça.** Se pedir, leia só o trecho da tela em questão. A regra vale só para este arquivo local, não para o artefato publicado.
 Valem também as regras do `CLAUDE.md` global (estrutura por pressão, regra pura, testes).
 
 ## Padrão de desenvolvimento
