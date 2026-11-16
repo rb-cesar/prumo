@@ -22,7 +22,7 @@ Precisa de Node 24 e pnpm 10.
 ```bash
 pnpm install
 pnpm dev          # abre o app no navegador
-pnpm check        # lint + tipos + testes (o mesmo que o CI roda)
+pnpm check        # lint + tipos + testes
 pnpm test:watch   # testes em modo contínuo
 pnpm build        # gera dist/
 ```
