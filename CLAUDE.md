@@ -11,7 +11,7 @@ Valem também as regras do `CLAUDE.md` global (estrutura por pressão, regra pur
 - Não há `PADRAO-BACKEND.md` (não há servidor). Citações a §3.1–§3.5 e §4 apontam para ele: ignore, o texto
   local basta.
 - Divergir da cópia é decisão registrada num ADR em `doc/adr/`.
-- A fatia 0 (fundação com Capacitor) ainda não foi aprovada: não criar o projeto sem pedir.
+- A fatia 0 (fundação) foi aprovada em 2026-11-15. O andamento está nas issues e nos milestones do GitHub (`rb-cesar/prumo`).
 
 ### Quando consultar
 

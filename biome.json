@@ -1,0 +1,39 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.6.8/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "ignoreUnknown": false,
+    "includes": ["**", "!android", "!dist", "!pnpm-lock.yaml", "!**/*.md"]
+  },
+  "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },
+  "linter": { "enabled": true, "rules": { "preset": "recommended" } },
+  "javascript": { "formatter": { "quoteStyle": "double" } },
+  "css": { "parser": { "tailwindDirectives": true } },
+  "assist": { "enabled": true, "actions": { "source": { "organizeImports": "on" } } },
+  "overrides": [
+    {
+      "includes": ["src/styles/*.css"],
+      "linter": { "rules": { "suspicious": { "noUnknownAtRules": "off" } } }
+    },
+    {
+      "includes": ["src/**/domain.ts", "src/**/domain/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "react": "domain é regra pura: não importa React (R1, §3.6)",
+                  "react-dom": "domain é regra pura: não importa React (R1, §3.6)",
+                  "react-router-dom": "domain é regra pura: não importa a interface (R1, §3.6)",
+                  "@tanstack/react-query": "domain é regra pura: consultas ficam no model.ts (R1, §6.6)"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

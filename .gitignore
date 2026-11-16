@@ -1,2 +1,4 @@
 prumo.html
 doc/business-rules/
+node_modules/
+dist/
