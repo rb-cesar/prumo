@@ -167,9 +167,10 @@ ambiente e deve cair primeiro.
 
 ## Pontos a verificar na fatia 0
 
-- **Versão do JDK exigida pelo Capacitor.** As fontes consultadas divergem entre 17 e 21, e esta
-  máquina tem 17. Escolher a versão estável mais recente do Capacitor no dia, conferir os
-  requisitos na documentação oficial e rodar `npx cap doctor`.
+- **Versão do JDK exigida pelo Capacitor — resolvido em 2026-11-16.** O Capacitor 8.6.2 gera um
+  projeto Android que exige **Java 21** (`sourceCompatibility` 21); o JDK 17 não serve. Usado o
+  Temurin 21.0.13, em `C:\Dev\jdk21`. O `cap doctor` aprova e o APK de depuração foi gerado e
+  aberto num aparelho Android.
 - **`node:sqlite` é release candidate** (estabilidade 1.2) no Node 24.15 ou superior. Fica só
   no adaptador de teste; plano B é o `better-sqlite3`, trocando um arquivo.
 - **Persistência na web** do plugin de SQLite (jeep-sqlite sobre IndexedDB) é mais frágil que a
