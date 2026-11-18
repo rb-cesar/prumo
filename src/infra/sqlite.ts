@@ -45,7 +45,11 @@ export async function runMigrations(database: SqlDatabase, migrations: Migration
       await database.run("INSERT INTO schema_migrations (name) VALUES (?)", [migration.name]);
       await database.runScript("COMMIT");
     } catch (error) {
-      await database.runScript("ROLLBACK");
+      try {
+        await database.runScript("ROLLBACK");
+      } catch {
+        // o que importa é o erro original, não a falha ao desfazer
+      }
       throw error;
     }
   }

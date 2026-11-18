@@ -1,15 +1,30 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { App } from "./app";
+import { createFakeTasksData } from "./data/tasks";
+import { createFixedClock } from "./infra/clock";
+import { ServicesProvider } from "./shared/services";
 
 afterEach(cleanup);
 
 describe("App", () => {
-  it("mostra o nome do app na tela inicial", () => {
-    render(<App />);
+  it("abre na tela de pendências", () => {
+    const services = {
+      tasks: createFakeTasksData(),
+      clock: createFixedClock("2026-11-13"),
+      generateId: () => "id-1",
+    };
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 
-    const appTitle = screen.getByRole("heading", { name: "Prumo" });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ServicesProvider services={services}>
+          <App />
+        </ServicesProvider>
+      </QueryClientProvider>,
+    );
 
-    expect(appTitle).not.toBeNull();
+    expect(screen.getByRole("heading", { name: "Pendências" })).not.toBeNull();
   });
 });

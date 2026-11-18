@@ -41,7 +41,7 @@ local** como fonte de verdade. **Sem backend na v1.**
 | Estilo | Tailwind 3.4 com tokens (`tokens.css` + `tailwind.config.ts`), tema claro e escuro | Mesmo desenho do `client-web` (ADR 0008 de lá). Os tokens de cor do protótipo viram os tokens do Tailwind. Escolhido em vez de CSS Modules pela consistência |
 | Fontes | `@fontsource-variable` (Bricolage Grotesque, Inter) | Empacotadas, funcionam offline. O CDN do protótipo não serve num app offline |
 | Casca nativa | Capacitor | Lembretes locais confiáveis e porta aberta para plugins Android; mantém uma base de código só |
-| Dados | SQLite via `@capacitor-community/sqlite` | Nativo no Android; no navegador roda por jeep-sqlite (IndexedDB). Consultas por envelope e mês pedem SQL |
+| Dados | SQLite via `@capacitor-community/sqlite` | Nativo no Android; no navegador roda por sql.js direto, com o banco guardado no IndexedDB (o jeep-sqlite foi descartado em 2026-11-18, veja os pontos a verificar). Consultas por envelope e mês pedem SQL |
 | Acesso a dados | SQL puro + migrações `.sql`, sem ORM, só em `data/` | Prisma não roda no aparelho; SQL puro basta nesse tamanho |
 | Validação | Zod na borda do adaptador, em `data/` | Linhas do banco e o arquivo de backup importado são entrada não confiável (§4.2 do `BACKEND`, §12.3) |
 | Domínio | Classes imutáveis para conceitos com identidade e regra (`Task`, `Envelope`, `Goal`); funções puras para cálculo e exibição | Preferência registrada no §3.6. A classe recusa estado inválido no construtor e converte com `fromRecord` e `toRecord` |
@@ -171,7 +171,10 @@ ambiente e deve cair primeiro.
   projeto Android que exige **Java 21** (`sourceCompatibility` 21); o JDK 17 não serve. Usado o
   Temurin 21.0.13, em `C:\Dev\jdk21`. O `cap doctor` aprova e o APK de depuração foi gerado e
   aberto num aparelho Android.
-- **`node:sqlite` é release candidate** (estabilidade 1.2) no Node 24.15 ou superior. Fica só
+- **`node:sqlite` — resolvido em 2026-11-18.** Funciona no Node 24.22 e roda os testes de banco em memória. Antes era dúvida: **release candidate** (estabilidade 1.2) no Node 24.15 ou superior. Fica só
   no adaptador de teste; plano B é o `better-sqlite3`, trocando um arquivo.
-- **Persistência na web** do plugin de SQLite (jeep-sqlite sobre IndexedDB) é mais frágil que a
-  nativa. Aceitável para desenvolvimento e plano B, não para ser a versão principal.
+- **Persistência na web — resolvido em 2026-11-18.** O jeep-sqlite foi descartado: ele embute uma cópia
+  própria do sql.js e exige um `.wasm` exatamente da mesma versão, que não foi possível descobrir (o app
+  travava ao abrir o banco). No navegador, `infra/web-database.ts` usa o sql.js direto, com código e `.wasm`
+  do mesmo pacote e o banco inteiro no IndexedDB. Serve para desenvolver e como plano B, não como versão
+  principal; o Android usa o plugin nativo.

@@ -16,7 +16,8 @@
       "linter": {
         "rules": {
           "suspicious": { "noUnknownAtRules": "off" },
-          "complexity": { "noImportantStyles": "off" }
+          "complexity": { "noImportantStyles": "off" },
+          "style": { "noDescendingSpecificity": "off" }
         }
       }
     },
