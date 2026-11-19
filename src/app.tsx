@@ -1,19 +1,11 @@
 import { HashRouter, Route, Routes } from "react-router-dom";
-
-function HelloScreen() {
-  return (
-    <main>
-      <h1>Prumo</h1>
-      <p>Olá. A fundação do app está de pé.</p>
-    </main>
-  );
-}
+import { TasksPage } from "./pages/tasks/tasks-page";
 
 export function App() {
   return (
     <HashRouter>
       <Routes>
-        <Route path="/" element={<HelloScreen />} />
+        <Route path="/" element={<TasksPage />} />
       </Routes>
     </HashRouter>
   );

@@ -1,0 +1,120 @@
+/* Gerado a partir do Design System Prumo (tokens.json). Para mudar um valor, mude lá e gere de novo. */
+
+:root,
+:root[data-theme="light"] {
+  --bg: #f2f4f7;
+  --surface: #ffffff;
+  --surface-2: #e8ecf1;
+  --ink: #0d1b2e;
+  --ink-2: #44546a;
+  --ink-3: #5e6e83;
+  --line: #d9dfe7;
+  --accent: #ffc21a;
+  --on-accent: #0d1b2e;
+  --steel: #2f6a9e;
+  --pos: #0e8559;
+  --neg: #d13f45;
+  --near: #e3a008;
+  --on-pos: #ffffff;
+  --steel-bg: #dfeaf5;
+  --pos-bg: #ddf3ea;
+  --neg-bg: #fbe4e3;
+  --near-bg: #fdf1cf;
+  --steel-ink: #1e4f7d;
+  --pos-ink: #0a6b49;
+  --neg-ink: #a1262c;
+  --near-ink: #7a5400;
+  --hero-bg: #0d1b2e;
+  --hero-fg: #f4f7fb;
+  --hero-fg-2: #aebbd0;
+  --hero-track: rgba(255, 255, 255, 0.16);
+  --hero-warn: #ff8f85;
+  --overlay: rgba(13, 27, 46, 0.5);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1320;
+    --surface: #131e30;
+    --surface-2: #1c2b43;
+    --ink: #edf2f8;
+    --ink-2: #b4c1d3;
+    --ink-3: #8fa2ba;
+    --line: #243652;
+    --steel: #6fa8dc;
+    --pos: #3fd39b;
+    --neg: #ff7b7f;
+    --near: #f5c542;
+    --on-pos: #0d1b2e;
+    --steel-bg: #1a2f47;
+    --pos-bg: #12362b;
+    --neg-bg: #3a1c21;
+    --near-bg: #3a3112;
+    --steel-ink: #a9ccee;
+    --pos-ink: #6be3b5;
+    --neg-ink: #ff9da0;
+    --near-ink: #f8d26a;
+    --hero-bg: #172844;
+    --hero-track: rgba(255, 255, 255, 0.14);
+    --overlay: rgba(2, 5, 11, 0.62);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0b1320;
+  --surface: #131e30;
+  --surface-2: #1c2b43;
+  --ink: #edf2f8;
+  --ink-2: #b4c1d3;
+  --ink-3: #8fa2ba;
+  --line: #243652;
+  --steel: #6fa8dc;
+  --pos: #3fd39b;
+  --neg: #ff7b7f;
+  --near: #f5c542;
+  --on-pos: #0d1b2e;
+  --steel-bg: #1a2f47;
+  --pos-bg: #12362b;
+  --neg-bg: #3a1c21;
+  --near-bg: #3a3112;
+  --steel-ink: #a9ccee;
+  --pos-ink: #6be3b5;
+  --neg-ink: #ff9da0;
+  --near-ink: #f8d26a;
+  --hero-bg: #172844;
+  --hero-track: rgba(255, 255, 255, 0.14);
+  --overlay: rgba(2, 5, 11, 0.62);
+  color-scheme: dark;
+}
+
+:root {
+  --font-display:
+    "Bricolage Grotesque Variable", "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter Variable", "Inter", "Segoe UI", system-ui, sans-serif;
+  --space-1: 4px;
+  --space-2: 6px;
+  --space-3: 8px;
+  --space-4: 10px;
+  --space-5: 12px;
+  --space-6: 14px;
+  --space-7: 16px;
+  --space-8: 22px;
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-lg: 14px;
+  --radius-card: 16px;
+  --radius-fab: 18px;
+  --radius-hero: 22px;
+  --radius-sheet: 26px;
+  --radius-pill: 999px;
+  --radius-round: 50%;
+  --shadow-segment: 0 1px 3px rgba(13, 27, 46, 0.16);
+  --shadow-fab: 0 8px 20px rgba(13, 27, 46, 0.3);
+  --shadow-toast: 0 10px 24px rgba(0, 0, 0, 0.3);
+  --size-touch: 44px;
+  --size-input: 46px;
+  --size-button: 48px;
+  --size-fab: 56px;
+}

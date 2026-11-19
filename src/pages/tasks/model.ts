@@ -1,0 +1,170 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { type TasksData, tasksKeys } from "../../data/tasks";
+import type { Clock } from "../../infra/clock";
+import type { IdGenerator } from "../../shared/ids";
+import { Cycle } from "../../shared/tasks/domain/cycle";
+import {
+  type MoneyDirection,
+  Task,
+  type TaskPriority,
+  type TaskStage,
+} from "../../shared/tasks/domain/task";
+import {
+  TaskRuleViolation,
+  type TaskRuleViolationReason,
+} from "../../shared/tasks/domain/task-rule-violation";
+import {
+  parseMoneyToCents,
+  type TaskFilter,
+  type TaskRowView,
+  type TaskScope,
+  tasksInBacklog,
+  tasksInCycle,
+  toTaskRowView,
+  visibleTasks,
+} from "./domain";
+
+export type TasksModelDeps = { tasks: TasksData; clock: Clock; generateId: IdGenerator };
+
+export type TasksScreenState =
+  | { status: "loading" }
+  | { status: "error"; reason: "data-unavailable" }
+  | {
+      status: "ready";
+      cycleLabel: string;
+      scope: TaskScope;
+      stage: TaskStage;
+      filter: TaskFilter;
+      counts: { cycle: number; backlog: number; todo: number; doing: number; done: number };
+      rows: TaskRowView[];
+    };
+
+/** O que a pessoa preenche ao adicionar uma pendência. */
+export type NewTaskForm = {
+  title: string;
+  dueDate: string;
+  priority: TaskPriority;
+  placement: TaskScope;
+  amountText: string;
+  direction: MoneyDirection;
+};
+
+export type CreateTaskResult =
+  | { ok: true }
+  | { ok: false; reason: TaskRuleViolationReason | "amount-not-a-number" };
+
+/** BR-T08: lê as pendências e devolve ao backlog, gravando, as que sobraram de um ciclo que acabou. */
+async function loadSettledTasks(tasksData: TasksData, currentCycle: Cycle): Promise<Task[]> {
+  const stored = await tasksData.list();
+  const settled = stored.map((task) => task.settledFor(currentCycle));
+  const changed = settled.filter((task, index) => task !== stored[index]);
+  await Promise.all(changed.map((task) => tasksData.save(task)));
+  return settled;
+}
+
+export function useTasksModel({ tasks: tasksData, clock, generateId }: TasksModelDeps) {
+  const queryClient = useQueryClient();
+  const [scope, setScope] = useState<TaskScope>("cycle");
+  const [stage, setStage] = useState<TaskStage>("todo");
+  const [filter, setFilter] = useState<TaskFilter>("all");
+
+  const today = clock.today();
+  const currentCycle = Cycle.containing(today);
+
+  const tasksQuery = useQuery({
+    queryKey: tasksKeys.all,
+    queryFn: () => loadSettledTasks(tasksData, Cycle.containing(clock.today())),
+  });
+
+  const saveTask = useMutation({
+    mutationFn: (task: Task) => tasksData.save(task),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: tasksKeys.all }),
+  });
+  const removeTask = useMutation({
+    mutationFn: (taskId: string) => tasksData.remove(taskId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: tasksKeys.all }),
+  });
+
+  const allTasks = tasksQuery.data ?? [];
+  const taskById = (taskId: string): Task | undefined =>
+    allTasks.find((task) => task.id === taskId);
+
+  function changeTask(taskId: string, change: (task: Task) => Task): void {
+    const task = taskById(taskId);
+    if (task !== undefined) saveTask.mutate(change(task));
+  }
+
+  const state: TasksScreenState = (() => {
+    if (tasksQuery.isPending) return { status: "loading" } as const;
+    if (tasksQuery.isError) return { status: "error", reason: "data-unavailable" } as const;
+
+    const inCycle = tasksInCycle(allTasks, currentCycle);
+    const inBacklog = tasksInBacklog(allTasks);
+    const countByStage = (wanted: TaskStage) =>
+      inCycle.filter((task) => task.stage === wanted).length;
+    const shownTasks =
+      scope === "cycle"
+        ? visibleTasks(
+            inCycle.filter((task) => task.stage === stage),
+            filter,
+          )
+        : visibleTasks(inBacklog, filter);
+
+    return {
+      status: "ready",
+      cycleLabel: currentCycle.label,
+      scope,
+      stage,
+      filter,
+      counts: {
+        cycle: inCycle.length,
+        backlog: inBacklog.length,
+        todo: countByStage("todo"),
+        doing: countByStage("doing"),
+        done: countByStage("done"),
+      },
+      rows: shownTasks.map((task) => toTaskRowView(task, today)),
+    } as const;
+  })();
+
+  return {
+    state,
+    today,
+    taskById,
+    controls: { setScope, setStage, setFilter },
+    actions: {
+      toggleDone: (taskId: string) => changeTask(taskId, (task) => task.toggleDone(today)),
+      moveToStage: (taskId: string, wanted: TaskStage) =>
+        changeTask(taskId, (task) => task.moveToStage(wanted, today)),
+      pullToCycle: (taskId: string) => changeTask(taskId, (task) => task.pullToCycle(currentCycle)),
+      moveToBacklog: (taskId: string) => changeTask(taskId, (task) => task.moveToBacklog()),
+      remove: (taskId: string) => removeTask.mutate(taskId),
+      async create(form: NewTaskForm): Promise<CreateTaskResult> {
+        const wantsMoney = form.amountText.trim() !== "";
+        const amountInCents = wantsMoney ? parseMoneyToCents(form.amountText) : null;
+        if (wantsMoney && amountInCents === null)
+          return { ok: false, reason: "amount-not-a-number" };
+
+        try {
+          const task = Task.create({
+            id: generateId(),
+            title: form.title,
+            priority: form.priority,
+            dueDate: form.dueDate === "" ? null : form.dueDate,
+            cycle: form.placement === "cycle" ? currentCycle : null,
+            money:
+              amountInCents === null
+                ? null
+                : { amountInCents, direction: form.direction, envelopeId: null },
+          });
+          await saveTask.mutateAsync(task);
+          return { ok: true };
+        } catch (error) {
+          if (error instanceof TaskRuleViolation) return { ok: false, reason: error.reason };
+          throw error;
+        }
+      },
+    },
+  };
+}

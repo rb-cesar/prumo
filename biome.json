@@ -13,7 +13,13 @@
   "overrides": [
     {
       "includes": ["src/styles/*.css"],
-      "linter": { "rules": { "suspicious": { "noUnknownAtRules": "off" } } }
+      "linter": {
+        "rules": {
+          "suspicious": { "noUnknownAtRules": "off" },
+          "complexity": { "noImportantStyles": "off" },
+          "style": { "noDescendingSpecificity": "off" }
+        }
+      }
     },
     {
       "includes": ["src/**/domain.ts", "src/**/domain/**"],
