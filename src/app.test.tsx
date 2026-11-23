@@ -3,6 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { App } from "./app";
 import { createFakeTasksData } from "./data/tasks";
+import { createFakeTransactionsData } from "./data/transactions";
 import { createFixedClock } from "./infra/clock";
 import { ServicesProvider } from "./shared/services";
 
@@ -12,6 +13,7 @@ describe("App", () => {
   it("abre na tela de pendências", () => {
     const services = {
       tasks: createFakeTasksData(),
+      transactions: createFakeTransactionsData(),
       clock: createFixedClock("2026-11-13"),
       generateId: () => "id-1",
     };

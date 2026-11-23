@@ -7,6 +7,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./app";
 import { createSqliteTasksData } from "./data/tasks";
+import { createSqliteTransactionsData } from "./data/transactions";
 import { systemClock } from "./infra/clock";
 import { openDeviceDatabase } from "./infra/device-database";
 import { bundledMigrations, runMigrations } from "./infra/sqlite";
@@ -21,6 +22,7 @@ async function start(rootElement: HTMLElement): Promise<void> {
     await runMigrations(database, bundledMigrations);
     const services = {
       tasks: createSqliteTasksData(database, systemClock),
+      transactions: createSqliteTransactionsData(database, systemClock),
       clock: systemClock,
       generateId,
     };

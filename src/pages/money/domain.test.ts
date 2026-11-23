@@ -7,6 +7,7 @@ import {
   describeMonth,
   everydayAllowance,
   formatMoneyFromCents,
+  formatWholeMoneyFromCents,
   groupTransactionsByDay,
   monthlyTotals,
   parseMoneyToCents,
@@ -62,6 +63,12 @@ describe("dinheiro", () => {
     expect(formatMoneyFromCents(0)).toBe("R$ 0,00");
   });
 
+  it("formata em reais inteiros, arredondando, para os resumos", () => {
+    expect(formatWholeMoneyFromCents(620000)).toBe("R$ 6.200");
+    expect(formatWholeMoneyFromCents(14160)).toBe("R$ 142");
+    expect(formatWholeMoneyFromCents(-1200)).toBe("−R$ 12");
+  });
+
   it("formata valor negativo com sinal na frente", () => {
     expect(formatMoneyFromCents(-1200)).toBe("−R$ 12,00");
   });
@@ -98,8 +105,8 @@ describe("gasto do envelope (BR-F04)", () => {
     const view = toEnvelopeRowView(groceries, [expense("a", "groceries", 55000)], month);
 
     expect(view).toMatchObject({
-      spentText: "R$ 550,00",
-      budgetText: "R$ 1.100,00",
+      spentText: "R$ 550",
+      budgetText: "R$ 1.100",
       fillRatio: 0.5,
       status: "ok",
       statusChip: { text: "Restam R$ 550,00", tone: null },
@@ -323,6 +330,6 @@ describe("a pagar e a receber (BR-F10)", () => {
 
 describe("mês", () => {
   it("descreve o mês por extenso", () => {
-    expect(describeMonth("2026-11-13")).toBe("novembro de 2026");
+    expect(describeMonth("2026-11-13")).toBe("Novembro de 2026");
   });
 });

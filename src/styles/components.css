@@ -830,10 +830,11 @@
 /* Barra de abas e aviso */
 .tabbar {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   background: var(--surface);
   border-top: 1px solid var(--line);
-  padding: 6px 16px 8px;
+  padding: 6px 16px calc(8px + var(--safe-area-inset-bottom, 0px));
 }
 .tab {
   position: relative;

@@ -88,10 +88,10 @@ function daysInMonthOf(isoDate: string): number {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)).getUTCDate();
 }
 
-/** "novembro de 2026". */
+/** "Novembro de 2026", para o subtítulo da tela. */
 export function describeMonth(isoDate: string): string {
-  const date = parseIsoDate(isoDate);
-  return `${MONTH_NAMES_LONG[date.getUTCMonth()]} de ${date.getUTCFullYear()}`;
+  const name = monthName(isoDate);
+  return `${name.charAt(0).toUpperCase()}${name.slice(1)} de ${parseIsoDate(isoDate).getUTCFullYear()}`;
 }
 
 /** Nome do mês sozinho, para títulos como "Envelopes de novembro". */
@@ -118,6 +118,13 @@ export function formatMoneyFromCents(amountInCents: number): string {
   const reais = Math.floor(absolute / 100);
   const cents = String(absolute % 100).padStart(2, "0");
   return `${sign}R$ ${reais.toLocaleString("pt-BR")},${cents}`;
+}
+
+/** "R$ 1.234", em reais inteiros (arredonda), para os resumos e as barras da tela. */
+export function formatWholeMoneyFromCents(amountInCents: number): string {
+  const sign = amountInCents < 0 ? "−" : "";
+  const reais = Math.round(Math.abs(amountInCents) / 100);
+  return `${sign}R$ ${reais.toLocaleString("pt-BR")}`;
 }
 
 /** Lê o que a pessoa digitou ("45,90", "1.200", "120.5") e devolve centavos, ou `null` se não for um valor. */
@@ -226,9 +233,9 @@ export function toMonthSummaryView(
 ): MonthSummaryView {
   const totals = monthlyTotals(transactions, month);
   return {
-    incomeText: formatMoneyFromCents(totals.incomeInCents),
-    expenseText: formatMoneyFromCents(totals.expenseInCents),
-    savedText: formatMoneyFromCents(totals.savedInCents),
+    incomeText: formatWholeMoneyFromCents(totals.incomeInCents),
+    expenseText: formatWholeMoneyFromCents(totals.expenseInCents),
+    savedText: formatWholeMoneyFromCents(totals.savedInCents),
     accountBalanceText: formatMoneyFromCents(
       accountBalanceInCents(openingBalanceInCents, transactions),
     ),
@@ -254,8 +261,8 @@ export function toEnvelopeRowView(
     id: envelope.id,
     name: envelope.name,
     isFixed: envelope.isFixed,
-    spentText: formatMoneyFromCents(spentInCents),
-    budgetText: formatMoneyFromCents(envelope.budgetInCents),
+    spentText: formatWholeMoneyFromCents(spentInCents),
+    budgetText: formatWholeMoneyFromCents(envelope.budgetInCents),
     fillRatio: Math.min(1, spentInCents / envelope.budgetInCents),
     status,
     statusChip,

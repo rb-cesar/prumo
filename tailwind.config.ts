@@ -69,6 +69,7 @@ export default {
       // 2, 2.5, 3, 3.5 e 4 da escala do Tailwind. Os 22px (--space-8) e os tamanhos de controle entram aqui.
       spacing: {
         section: "var(--space-8)",
+        "above-tabs": "calc(5.5rem + var(--safe-area-inset-bottom, 0px))",
         touch: "var(--size-touch)",
         input: "var(--size-input)",
         button: "var(--size-button)",

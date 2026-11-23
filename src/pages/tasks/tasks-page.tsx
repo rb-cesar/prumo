@@ -45,7 +45,7 @@ export function TasksPage() {
         </div>
       </header>
 
-      <main className="flex flex-col gap-section px-4 pb-32 pt-1.5">
+      <main className="flex flex-col gap-section px-4 pb-40 pt-1.5">
         {state.status === "loading" ? <p className="text-small text-ink-2">Carregando…</p> : null}
 
         {state.status === "error" ? (
@@ -132,7 +132,7 @@ export function TasksPage() {
 
       {state.status === "ready" ? (
         <button
-          className="fab fixed bottom-6 right-4 z-10"
+          className="fab fixed bottom-above-tabs right-4 z-10"
           type="button"
           aria-label="Adicionar"
           onClick={() => setOpenSheet({ kind: "add" })}

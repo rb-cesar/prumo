@@ -12,7 +12,11 @@ export type TasksData = {
 };
 
 /** Chaves das consultas: quem lê (o model) e quem invalida (a ação) usam as mesmas. */
-export const tasksKeys = { all: ["tasks"] as const };
+export const tasksKeys = {
+  all: ["tasks"] as const,
+  /** As pendências que a tela de finanças lê; cai junto quando `all` é invalidada. */
+  withMoney: ["tasks", "with-money"] as const,
+};
 
 // ---------------------------------------------------------------- linha do banco
 
