@@ -65,9 +65,10 @@ export default {
         label: ["12px", { lineHeight: "1.4", letterSpacing: "0.08em", fontWeight: "600" }],
         tab: ["11px", { lineHeight: "1.4", fontWeight: "500" }],
       },
-      // Os espaços do design system (4, 6, 8, 10, 12, 14, 16 e 22px) já são os passos 1, 1.5, 2, 2.5,
-      // 3, 3.5, 4 e 5.5 da escala do Tailwind. Aqui entram só os tamanhos de controle.
+      // Os espaços do design system de 4 a 16px (--space-1 a --space-7) coincidem com os passos 1, 1.5,
+      // 2, 2.5, 3, 3.5 e 4 da escala do Tailwind. Os 22px (--space-8) e os tamanhos de controle entram aqui.
       spacing: {
+        section: "var(--space-8)",
         touch: "var(--size-touch)",
         input: "var(--size-input)",
         button: "var(--size-button)",

@@ -45,7 +45,7 @@ export function TasksPage() {
         </div>
       </header>
 
-      <main className="flex flex-col gap-5.5 px-4 pb-32 pt-1.5">
+      <main className="flex flex-col gap-section px-4 pb-32 pt-1.5">
         {state.status === "loading" ? <p className="text-small text-ink-2">Carregando…</p> : null}
 
         {state.status === "error" ? (
