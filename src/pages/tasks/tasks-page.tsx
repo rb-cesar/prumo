@@ -1,7 +1,7 @@
 import { useState } from "react";
+import { Icon } from "../../shared/icon";
 import { useServices } from "../../shared/services";
 import { AddTaskSheet } from "./components/add-task-sheet";
-import { Icon } from "./components/icon";
 import { Segmented } from "./components/segmented";
 import { TaskDetailSheet } from "./components/task-detail-sheet";
 import { TaskRow } from "./components/task-row";

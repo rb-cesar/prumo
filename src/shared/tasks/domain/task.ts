@@ -1,7 +1,7 @@
 /** Regra de pendências (doc/business-rules/tasks.md, BR-T01 a BR-T10). Regra pura: sem tela, banco ou relógio. */
 
+import { daysBetween, isValidIsoDate } from "../../iso-date";
 import { Cycle } from "./cycle";
-import { daysBetween, isValidIsoDate } from "./iso-date";
 import { TaskRuleViolation } from "./task-rule-violation";
 
 export type TaskStage = "todo" | "doing" | "done";
