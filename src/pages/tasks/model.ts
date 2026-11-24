@@ -14,16 +14,7 @@ import {
   TaskRuleViolation,
   type TaskRuleViolationReason,
 } from "../../shared/tasks/domain/task-rule-violation";
-import {
-  parseMoneyToCents,
-  type TaskFilter,
-  type TaskRowView,
-  type TaskScope,
-  tasksInBacklog,
-  tasksInCycle,
-  toTaskRowView,
-  visibleTasks,
-} from "./domain";
+import { Money, type TaskFilter, TaskList, type TaskRowView, type TaskScope } from "./domain";
 
 export type TasksModelDeps = { tasks: TasksData; clock: Clock; generateId: IdGenerator };
 
@@ -99,17 +90,9 @@ export function useTasksModel({ tasks: tasksData, clock, generateId }: TasksMode
     if (tasksQuery.isPending) return { status: "loading" } as const;
     if (tasksQuery.isError) return { status: "error", reason: "data-unavailable" } as const;
 
-    const inCycle = tasksInCycle(allTasks, currentCycle);
-    const inBacklog = tasksInBacklog(allTasks);
-    const countByStage = (wanted: TaskStage) =>
-      inCycle.filter((task) => task.stage === wanted).length;
-    const shownTasks =
-      scope === "cycle"
-        ? visibleTasks(
-            inCycle.filter((task) => task.stage === stage),
-            filter,
-          )
-        : visibleTasks(inBacklog, filter);
+    const inCycle = new TaskList(allTasks).inCycle(currentCycle);
+    const inBacklog = new TaskList(allTasks).inBacklog();
+    const shownTasks = scope === "cycle" ? inCycle.inStage(stage) : inBacklog;
 
     return {
       status: "ready",
@@ -118,13 +101,13 @@ export function useTasksModel({ tasks: tasksData, clock, generateId }: TasksMode
       stage,
       filter,
       counts: {
-        cycle: inCycle.length,
-        backlog: inBacklog.length,
-        todo: countByStage("todo"),
-        doing: countByStage("doing"),
-        done: countByStage("done"),
+        cycle: inCycle.count,
+        backlog: inBacklog.count,
+        todo: inCycle.inStage("todo").count,
+        doing: inCycle.inStage("doing").count,
+        done: inCycle.inStage("done").count,
       },
-      rows: shownTasks.map((task) => toTaskRowView(task, today)),
+      rows: shownTasks.matching(filter).inListOrder().toRowViews(today),
     } as const;
   })();
 
@@ -142,7 +125,7 @@ export function useTasksModel({ tasks: tasksData, clock, generateId }: TasksMode
       remove: (taskId: string) => removeTask.mutate(taskId),
       async create(form: NewTaskForm): Promise<CreateTaskResult> {
         const wantsMoney = form.amountText.trim() !== "";
-        const amountInCents = wantsMoney ? parseMoneyToCents(form.amountText) : null;
+        const amountInCents = wantsMoney ? (Money.parse(form.amountText)?.cents ?? null) : null;
         if (wantsMoney && amountInCents === null)
           return { ok: false, reason: "amount-not-a-number" };
 

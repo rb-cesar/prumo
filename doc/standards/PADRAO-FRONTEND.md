@@ -448,24 +448,25 @@ prumo/
    │     └─ index.ts                  exporta o componente (e o hook, se houver)
    │
    ├─ pages/                          uma pasta por rota; cada uma: *-page.tsx · model.ts · domain · components/ · testes
-   │  ├─ tasks/                       tasks-page.tsx · model.ts · domain.ts (ciclo, ordenação) · components/   F1
-   │  ├─ money/                       money-page.tsx · model.ts · domain.ts (envelopes, lançamentos)           F2
+   │  ├─ tasks/                       tasks-page.tsx · model.ts · domain/ (TaskList, TaskDisplay, Money) · components/   F1
+   │  ├─ money/                       money-page.tsx · model.ts · domain/ (Ledger, EverydayBudget, Payables, Money) · components/   F2
    │  ├─ today/                       today-page.tsx · model.ts · domain.ts (visão do dia)                     F4
    │  ├─ goals/                       goals-page.tsx · model.ts · domain.ts (classe Goal e ritmo)              F5
    │  └─ history/                     history-page.tsx · model.ts · domain.ts (visões derivadas)               F6
    │
    ├─ shared/                         regra ou utilitário de duas ou mais telas, sem ser visual
    │  ├─ services.tsx                 createServices · ServicesProvider · useServices                     F1
-   │  ├─ format.ts · ids.ts           formatação (BRL, data) e geração de ids                             F1
-   │  ├─ tasks/                                                                                           F3
-   │  │  ├─ domain/                   pasta: dois conceitos, uma classe por arquivo
+   │  ├─ iso-date.ts · day-labels.ts · ids.ts   datas AAAA-MM-DD, nome de dia e de mês, geração de ids   F1
+   │  ├─ icon.tsx · tab-bar.tsx       ícones e barra de abas                                              F2
+   │  ├─ tasks/
+   │  │  ├─ domain/                   pasta: dois conceitos, uma classe por arquivo                       F1
    │  │  │  ├─ task.ts · task.test.ts       classe Task
    │  │  │  └─ cycle.ts · cycle.test.ts     classe Cycle
-   │  │  └─ use-complete-task.ts · use-complete-task.test.ts   concluir com valor lança no envelope; reabrir remove
+   │  │  └─ use-complete-task.ts · use-complete-task.test.ts   concluir com valor lança no envelope; reabrir remove   F3
    │  └─ finance/
-   │     └─ domain/                   pasta: dois conceitos que não se chamam
-   │        ├─ envelope.ts · envelope.test.ts      classe Envelope (situação do envelope)
-   │        └─ allowance.ts · allowance.test.ts    função do "pode gastar hoje"
+   │     └─ domain/                   pasta: dois conceitos que não se chamam                             F2
+   │        ├─ envelope.ts · envelope.test.ts          classe Envelope (situação do envelope)
+   │        └─ transaction.ts · transaction.test.ts    classe Transaction (lançamento)
    │
    ├─ data/                           único lugar com SQL. Cada arquivo: interface + adaptador SQLite
    │  │                               + fake + schema Zod + chaves de consulta
@@ -485,10 +486,10 @@ prumo/
 **Como ler a árvore.** `F0` a `F8` são as fatias do ADR 0001: **cada peça nasce na fatia indicada, não
 antes**, e nada é criado vazio. Os arquivos de teste ficam ao lado do que testam.
 
-- **Destino final, não ponto de partida.** `Task` e `Cycle` começam em `pages/tasks/domain.ts` (F1) e
-  sobem para `shared/tasks/domain/` na F3, quando `use-complete-task` nasce em `shared/`. `Envelope` e
-  `Allowance` começam em `pages/money/domain.ts` (F2) e sobem para `shared/finance/domain/` quando a
-  terceira tela precisar (§6.3).
+- **Conceito que o banco também usa nasce em `shared/`.** `Task`, `Cycle`, `Envelope` e `Transaction`
+  moram em `shared/<área>/domain/` desde a fatia em que nascem, porque `data/` não pode importar de
+  `pages/` (ADR 0003). Já as classes de cálculo e exibição da tela (`TaskList`, `Ledger`,
+  `EverydayBudget`) começam em `pages/<tela>/domain/` e sobem para `shared/` na terceira tela (§6.3).
 - **Arquivo que vira pasta:** `domain.ts` de uma tela vira `domain/` ao passar de ~300 linhas ou com
   dois grupos de regra que não se chamam; `data/<recurso>.ts` vira pasta no mesmo limite. O
   `model.ts` nunca vira pasta (§6.4).
@@ -511,10 +512,10 @@ antes**, e nada é criado vazio. Os arquivos de teste ficam ao lado do que testa
 | Sincronizar entre aparelhos, no futuro | muda o adaptador de `data/`; ids no aparelho, `updatedAt` e `deletedAt` já estão no formato | §6.7, §12.4 |
 
 **Por que `shared/finance/domain/` é pasta e `pages/today/domain.ts` é arquivo.** O domínio de
-finanças tem conceitos que não se chamam entre si (a situação do envelope e o valor diário), e
-com classes o natural é uma por arquivo, então passou do gatilho do §3.6. As regras de exibição da
-tela "Hoje" tratam de um conceito só e cabem em um arquivo, então continuam arquivo até um gatilho
-dizer o contrário.
+finanças tem conceitos que não se chamam entre si (`Envelope` e `Transaction`), e com classes o
+natural é uma por arquivo, então passou do gatilho do §3.6. As regras de exibição da tela "Hoje"
+tratam de um conceito só e cabem em um arquivo, então continuam arquivo até um gatilho dizer o
+contrário. `pages/tasks/domain/` e `pages/money/domain/` são pastas pelo mesmo motivo (ADR 0003).
 
 **O ponto:** é o mesmo padrão do todo list e da plataforma social, só que com a metade servidor
 ausente. O que muda é o adaptador (SQL em vez de HTTP); a tela, o model e o domínio são os mesmos.

@@ -19,6 +19,8 @@ React, "hoje" e dependências entram por parâmetro.
 
 Em finanças: `Money` (ler e mostrar valor), `Ledger` (contas sobre os lançamentos, com filtros que se
 encadeiam), `EverydayBudget` ("pode gastar hoje") e `Payables` (pendências a pagar e a receber).
+Em pendências: `TaskList` (recortes por ciclo, backlog, etapa e filtro, que se encadeiam), `TaskDisplay`
+(linha da lista e folha de detalhes) e a sua cópia de `Money`, que aceita só valor maior que zero.
 
 Fica de fora a classe só de métodos estáticos (o Biome reprova) e a classe única com tudo (God object).
 
@@ -33,6 +35,8 @@ Dois acertos de localização, que o ADR 0001 e o §11.3 ainda descrevem de outr
 ## Consequências
 
 - Cada arquivo de domínio tem um papel e fica abaixo de ~300 linhas.
-- O domínio de pendências (`pages/tasks/domain.ts`) continua com funções por enquanto. Passa para
-  classes quando for mexido, para não reescrever o que está pronto.
+- O domínio de pendências também foi convertido (era `pages/tasks/domain.ts`, com funções), para o
+  projeto não ficar com dois estilos. Os testes antigos foram mantidos, só trocando a forma de chamar.
+- `Money` existe nas duas telas, com regras diferentes (finanças aceita zero; pendência não). Sobe
+  para `shared/` na terceira tela (§6.3).
 - **Quando rever:** se uma classe crescer a ponto de juntar dois assuntos, divide-se em duas.

@@ -5,7 +5,7 @@ import { AddTaskSheet } from "./components/add-task-sheet";
 import { Segmented } from "./components/segmented";
 import { TaskDetailSheet } from "./components/task-detail-sheet";
 import { TaskRow } from "./components/task-row";
-import { type TaskFilter, type TaskScope, toTaskDetailView } from "./domain";
+import { TaskDisplay, type TaskFilter, type TaskScope } from "./domain";
 import { useTasksModel } from "./model";
 
 type OpenSheet = { kind: "add" } | { kind: "detail"; taskId: string } | null;
@@ -151,7 +151,7 @@ export function TasksPage() {
 
       {openSheet?.kind === "detail" && detailTask !== undefined ? (
         <TaskDetailSheet
-          detail={toTaskDetailView(detailTask, model.today)}
+          detail={new TaskDisplay(detailTask).toDetailView(model.today)}
           cycleLabel={cycleLabel}
           onChangeStage={(stage) => actions.moveToStage(detailTask.id, stage)}
           onPullToCycle={() => actions.pullToCycle(detailTask.id)}
