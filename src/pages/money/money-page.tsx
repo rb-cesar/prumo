@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Icon } from "../../shared/icon";
 import { useServices } from "../../shared/services";
+import { CompleteTaskSheet } from "../../shared/tasks/complete-task-sheet";
 import { AddTransactionSheet } from "./components/add-transaction-sheet";
 import { EnvelopeRow } from "./components/envelope-row";
 import { OpeningBalanceSheet } from "./components/opening-balance-sheet";
@@ -119,7 +120,7 @@ export function MoneyPage() {
               ) : (
                 <div className="card flush list">
                   {state.payables.map((row) => (
-                    <PayableRow key={row.id} row={row} />
+                    <PayableRow key={row.id} row={row} onComplete={actions.completePayable} />
                   ))}
                 </div>
               )}
@@ -194,6 +195,15 @@ export function MoneyPage() {
           onClose={closeSheet}
         />
       ) : null}
+
+      {model.completion.pending === null ? null : (
+        <CompleteTaskSheet
+          pending={model.completion.pending}
+          today={model.today}
+          onChoose={model.completion.choose}
+          onCancel={model.completion.cancel}
+        />
+      )}
 
       {isOpeningBalanceSheetOpen ? (
         <OpeningBalanceSheet onSave={actions.saveOpeningBalance} onClose={closeSheet} />

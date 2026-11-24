@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Icon } from "../../shared/icon";
 import { useServices } from "../../shared/services";
+import { CompleteTaskSheet } from "../../shared/tasks/complete-task-sheet";
 import { AddTaskSheet } from "./components/add-task-sheet";
 import { Segmented } from "./components/segmented";
 import { TaskDetailSheet } from "./components/task-detail-sheet";
@@ -160,6 +161,16 @@ export function TasksPage() {
           onClose={() => setOpenSheet(null)}
         />
       ) : null}
+
+      {/* Por último de propósito: a folha de concluir abre por cima da de detalhes. */}
+      {model.completion.pending === null ? null : (
+        <CompleteTaskSheet
+          pending={model.completion.pending}
+          today={model.today}
+          onChoose={model.completion.choose}
+          onCancel={model.completion.cancel}
+        />
+      )}
     </div>
   );
 }

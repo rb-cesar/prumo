@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { createFakeTasksData } from "../../data/tasks";
 import { createFakeTransactionsData } from "../../data/transactions";
 import { createFixedClock } from "../../infra/clock";
+import { Envelope } from "../../shared/finance/domain/envelope";
 import { ServicesProvider } from "../../shared/services";
 import { Cycle } from "../../shared/tasks/domain/cycle";
 import { Task } from "../../shared/tasks/domain/task";
@@ -13,11 +14,19 @@ afterEach(cleanup);
 
 const today = "2026-11-13";
 
+const groceries = Envelope.fromRecord({
+  id: "groceries",
+  name: "Mercado",
+  budgetInCents: 110000,
+  isFixed: false,
+});
+
 function renderPage(seed: Task[] = []) {
   const tasks = createFakeTasksData(seed);
+  const transactions = createFakeTransactionsData({ envelopes: [groceries] });
   const services = {
     tasks,
-    transactions: createFakeTransactionsData(),
+    transactions,
     clock: createFixedClock(today),
     generateId: () => "new-id",
   };
@@ -29,7 +38,16 @@ function renderPage(seed: Task[] = []) {
       </ServicesProvider>
     </QueryClientProvider>,
   );
-  return tasks;
+  return { tasks, transactions };
+}
+
+function paidTask(envelopeId: string | null) {
+  return Task.create({
+    id: "feira",
+    title: "Fazer a feira",
+    cycle: Cycle.containing(today),
+    money: { amountInCents: 18420, direction: "expense", envelopeId },
+  });
 }
 
 describe("TasksPage", () => {
@@ -57,6 +75,95 @@ describe("TasksPage", () => {
 
     await waitFor(() =>
       expect(screen.getByRole("tab", { name: /Feito/ }).textContent).toContain("1"),
+    );
+  });
+
+  it("concluir uma pendência com valor pergunta e, se lançar, cria o gasto no envelope", async () => {
+    const { transactions } = renderPage([paidTask("groceries")]);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Concluir: Fazer a feira" }));
+    const sheet = within(await screen.findByRole("dialog"));
+    expect(sheet.getByText("Mercado depois de lançar")).not.toBeNull();
+    fireEvent.click(sheet.getByRole("button", { name: "Lançar e concluir" }));
+
+    await waitFor(() =>
+      expect(screen.getByRole("tab", { name: /Feito/ }).textContent).toContain("1"),
+    );
+    const [transaction] = await transactions.listTransactions();
+    expect(transaction?.toRecord()).toMatchObject({
+      kind: "expense",
+      amountInCents: 18420,
+      envelopeId: "groceries",
+      taskId: "feira",
+      date: today,
+    });
+  });
+
+  it("'Só concluir' conclui sem lançar nada", async () => {
+    const { transactions } = renderPage([paidTask("groceries")]);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Concluir: Fazer a feira" }));
+    fireEvent.click(
+      within(await screen.findByRole("dialog")).getByRole("button", { name: "Só concluir" }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getByRole("tab", { name: /Feito/ }).textContent).toContain("1"),
+    );
+    expect(await transactions.listTransactions()).toEqual([]);
+  });
+
+  it("deixa escolher o envelope quando a pendência a pagar ainda não tem um", async () => {
+    const { transactions } = renderPage([paidTask(null)]);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Concluir: Fazer a feira" }));
+    const sheet = within(await screen.findByRole("dialog"));
+    fireEvent.change(sheet.getByLabelText("Envelope"), { target: { value: "groceries" } });
+    fireEvent.click(sheet.getByRole("button", { name: "Lançar e concluir" }));
+
+    await waitFor(async () =>
+      expect((await transactions.listTransactions())[0]?.envelopeId).toBe("groceries"),
+    );
+  });
+
+  it("fechar a pergunta não conclui nem lança", async () => {
+    const { transactions } = renderPage([paidTask("groceries")]);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Concluir: Fazer a feira" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Fechar" }));
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByRole("tab", { name: /A fazer/ }).textContent).toContain("1");
+    expect(await transactions.listTransactions()).toEqual([]);
+  });
+
+  it("a pergunta de concluir abre por cima da folha de detalhes", async () => {
+    renderPage([paidTask("groceries")]);
+    fireEvent.click(await screen.findByText("Fazer a feira"));
+    const detailSheet = within(await screen.findByRole("dialog", { name: "Fazer a feira" }));
+
+    fireEvent.click(detailSheet.getByRole("button", { name: "Feito" }));
+
+    await waitFor(() => {
+      const openSheets = screen.getAllByRole("dialog");
+      const topSheet = openSheets[openSheets.length - 1];
+      expect(topSheet?.getAttribute("aria-label")).toBe("Concluir e lançar no financeiro?");
+    });
+  });
+
+  it("reabrir a pendência remove o lançamento que ela gerou", async () => {
+    const { transactions } = renderPage([paidTask("groceries")]);
+    fireEvent.click(await screen.findByRole("button", { name: "Concluir: Fazer a feira" }));
+    fireEvent.click(
+      within(await screen.findByRole("dialog")).getByRole("button", { name: "Lançar e concluir" }),
+    );
+    fireEvent.click(await screen.findByRole("tab", { name: /Feito/ }));
+
+    fireEvent.click(await screen.findByRole("button", { name: "Reabrir: Fazer a feira" }));
+
+    await waitFor(async () => expect(await transactions.listTransactions()).toEqual([]));
+    await waitFor(() =>
+      expect(screen.getByRole("tab", { name: /A fazer/ }).textContent).toContain("1"),
     );
   });
 

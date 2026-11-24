@@ -1,8 +1,8 @@
-import { describeDay } from "../../../shared/day-labels";
-import type { Envelope, EnvelopeStatus } from "../../../shared/finance/domain/envelope";
-import type { Transaction, TransactionKind } from "../../../shared/finance/domain/transaction";
-import { monthOf } from "../../../shared/iso-date";
+import { describeDay } from "../../day-labels";
+import { monthOf } from "../../iso-date";
+import type { Envelope, EnvelopeStatus } from "./envelope";
 import { Money } from "./money";
+import type { Transaction, TransactionKind } from "./transaction";
 
 export type ChipView = { text: string; tone: "neg" | "near" | null };
 
@@ -24,6 +24,8 @@ export type TransactionRowView = {
   description: string;
   categoryName: string;
   signedAmountText: string;
+  /** Veio de uma pendência concluída. */
+  isFromTask: boolean;
 };
 
 export type TransactionDayGroup = { dayText: string; rows: TransactionRowView[] };
@@ -162,6 +164,7 @@ export class Ledger {
       description: transaction.description,
       categoryName: envelopeName ?? categoryByKind[transaction.kind],
       signedAmountText: `${sign} ${Money.ofCents(transaction.amountInCents).format()}`,
+      isFromTask: transaction.taskId !== null,
     };
   }
 }

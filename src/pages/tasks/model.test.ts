@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 import { createFakeTasksData, type TasksData } from "../../data/tasks";
+import { createFakeTransactionsData } from "../../data/transactions";
 import { createFixedClock } from "../../infra/clock";
 import { Cycle } from "../../shared/tasks/domain/cycle";
 import { Task } from "../../shared/tasks/domain/task";
@@ -19,7 +20,12 @@ function createWrapper() {
 
 function createDeps(tasks: TasksData): TasksModelDeps {
   let nextId = 1;
-  return { tasks, clock: createFixedClock(today), generateId: () => `new-${nextId++}` };
+  return {
+    tasks,
+    transactions: createFakeTransactionsData(),
+    clock: createFixedClock(today),
+    generateId: () => `new-${nextId++}`,
+  };
 }
 
 function renderModel(tasks: TasksData) {

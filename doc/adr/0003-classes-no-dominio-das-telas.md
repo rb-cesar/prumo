@@ -37,6 +37,9 @@ Dois acertos de localização, que o ADR 0001 e o §11.3 ainda descrevem de outr
 - Cada arquivo de domínio tem um papel e fica abaixo de ~300 linhas.
 - O domínio de pendências também foi convertido (era `pages/tasks/domain.ts`, com funções), para o
   projeto não ficar com dois estilos. Os testes antigos foram mantidos, só trocando a forma de chamar.
+- Na fatia 3, `Ledger` e `Money` (de finanças) subiram para `shared/finance/domain/`, porque a
+  folha de concluir pendência (`shared/tasks/`) precisa deles e código de `shared/` não importa de
+  `pages/`. Também subiu o `BottomSheet`, que passou a ter três usos.
 - `Money` existe nas duas telas, com regras diferentes (finanças aceita zero; pendência não). Sobe
   para `shared/` na terceira tela (§6.3).
 - **Quando rever:** se uma classe crescer a ponto de juntar dois assuntos, divide-se em duas.

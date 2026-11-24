@@ -7,6 +7,7 @@ import { createFixedClock } from "../../infra/clock";
 import { Envelope } from "../../shared/finance/domain/envelope";
 import { Transaction } from "../../shared/finance/domain/transaction";
 import { ServicesProvider } from "../../shared/services";
+import { Task } from "../../shared/tasks/domain/task";
 import { MoneyPage } from "./money-page";
 
 afterEach(cleanup);
@@ -19,10 +20,13 @@ const groceries = Envelope.fromRecord({
   isFixed: false,
 });
 
-function renderPage(seed: { transactions?: Transaction[]; openingBalanceInCents?: number } = {}) {
-  const transactions = createFakeTransactionsData({ envelopes: [groceries], ...seed });
+function renderPage(
+  seed: { transactions?: Transaction[]; openingBalanceInCents?: number; tasks?: Task[] } = {},
+) {
+  const { tasks = [], ...financeSeed } = seed;
+  const transactions = createFakeTransactionsData({ envelopes: [groceries], ...financeSeed });
   const services = {
-    tasks: createFakeTasksData(),
+    tasks: createFakeTasksData(tasks),
     transactions,
     clock: createFixedClock(today),
     generateId: () => "new-id",
@@ -45,6 +49,39 @@ const buyGroceries = Transaction.create({
   date: today,
   description: "Mercado do bairro",
   envelopeId: "groceries",
+});
+
+describe("MoneyPage: concluir uma pendência a pagar", () => {
+  const electricityBill = Task.create({
+    id: "luz",
+    title: "Pagar conta de luz",
+    money: { amountInCents: 18740, direction: "expense", envelopeId: "groceries" },
+  });
+
+  it("lança o gasto, tira a pendência de 'a pagar' e marca o lançamento como de uma pendência", async () => {
+    renderPage({ openingBalanceInCents: 0, tasks: [electricityBill] });
+
+    fireEvent.click(await screen.findByRole("button", { name: "Concluir: Pagar conta de luz" }));
+    fireEvent.click(
+      within(await screen.findByRole("dialog")).getByRole("button", { name: "Lançar e concluir" }),
+    );
+
+    expect(await screen.findByText("de uma pendência")).not.toBeNull();
+    expect(screen.getByText("Nada a pagar ou receber")).not.toBeNull();
+    expect(screen.getByText("− R$ 187,40")).not.toBeNull();
+  });
+
+  it("'Só concluir' tira de 'a pagar' sem criar lançamento", async () => {
+    renderPage({ openingBalanceInCents: 0, tasks: [electricityBill] });
+
+    fireEvent.click(await screen.findByRole("button", { name: "Concluir: Pagar conta de luz" }));
+    fireEvent.click(
+      within(await screen.findByRole("dialog")).getByRole("button", { name: "Só concluir" }),
+    );
+
+    expect(await screen.findByText("Nada a pagar ou receber")).not.toBeNull();
+    expect(screen.getByText("Nenhum lançamento")).not.toBeNull();
+  });
 });
 
 describe("MoneyPage", () => {

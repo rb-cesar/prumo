@@ -1,9 +1,22 @@
+import { Icon } from "../../../shared/icon";
 import type { PayableRowView } from "../domain";
 
-/** Pendência aberta com valor. Só mostra: concluir com valor é da fatia 3. */
-export function PayableRow({ row }: { row: PayableRowView }) {
+type PayableRowProps = { row: PayableRowView; onComplete: (taskId: string) => void };
+
+/** Pendência aberta com valor. Tocar no círculo conclui e pergunta se lança no financeiro. */
+export function PayableRow({ row, onComplete }: PayableRowProps) {
   return (
     <div className="task-row">
+      <button
+        className="check-button"
+        type="button"
+        aria-label={`Concluir: ${row.title}`}
+        onClick={() => onComplete(row.id)}
+      >
+        <span className="check" data-status="todo">
+          <Icon name="check" size={14} />
+        </span>
+      </button>
       <div className="grow min-w-0">
         <div className="task-title">{row.title}</div>
         <div className="task-meta">

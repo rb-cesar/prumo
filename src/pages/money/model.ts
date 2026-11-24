@@ -8,19 +8,20 @@ import {
   FinanceRuleViolation,
   type FinanceRuleViolationReason,
 } from "../../shared/finance/domain/finance-rule-violation";
-import { Transaction } from "../../shared/finance/domain/transaction";
-import type { IdGenerator } from "../../shared/ids";
-import { monthOf } from "../../shared/iso-date";
 import {
   type EnvelopeRowView,
   Ledger,
-  Money,
   type MonthSummaryView,
-  type PayableRowView,
-  Payables,
   type TransactionDayGroup,
   type TransactionRowView,
-} from "./domain";
+} from "../../shared/finance/domain/ledger";
+import { Money } from "../../shared/finance/domain/money";
+import { Transaction } from "../../shared/finance/domain/transaction";
+import { financeSnapshotQuery } from "../../shared/finance/finance-snapshot";
+import type { IdGenerator } from "../../shared/ids";
+import { monthOf } from "../../shared/iso-date";
+import { useCompleteTask } from "../../shared/tasks/use-complete-task";
+import { type PayableRowView, Payables } from "./domain";
 
 export type MoneyModelDeps = {
   tasks: TasksData;
@@ -67,21 +68,17 @@ export function useMoneyModel({
   generateId,
 }: MoneyModelDeps) {
   const queryClient = useQueryClient();
+  const completeTask = useCompleteTask({
+    tasks: tasksData,
+    transactions: transactionsData,
+    clock,
+    generateId,
+  });
   const [envelopeFilterId, setEnvelopeFilterId] = useState<string | null>(null);
   const today = clock.today();
   const month = monthOf(today);
 
-  const financeQuery = useQuery({
-    queryKey: transactionsKeys.all,
-    queryFn: async () => {
-      const [envelopes, transactions, openingBalanceInCents] = await Promise.all([
-        transactionsData.listEnvelopes(),
-        transactionsData.listTransactions(),
-        transactionsData.getOpeningBalanceInCents(),
-      ]);
-      return { envelopes, transactions, openingBalanceInCents };
-    },
-  });
+  const financeQuery = useQuery(financeSnapshotQuery(transactionsData));
   const tasksQuery = useQuery({
     queryKey: tasksKeys.withMoney,
     queryFn: () => tasksData.list(),
@@ -137,8 +134,15 @@ export function useMoneyModel({
 
   return {
     state,
+    today,
     envelopeOptions,
     findTransactionRow,
+    /** A pergunta "lançar no financeiro?" quando se conclui uma pendência com valor. */
+    completion: {
+      pending: completeTask.pending,
+      choose: completeTask.confirm,
+      cancel: completeTask.cancel,
+    },
     controls: {
       /** Tocar no envelope filtra a lista; tocar de novo limpa o filtro (BR-F09). */
       toggleEnvelopeFilter: (envelopeId: string) =>
@@ -167,6 +171,11 @@ export function useMoneyModel({
         }
       },
       removeTransaction: (transactionId: string) => removeTransaction.mutate(transactionId),
+      /** BR-F10: tocar no círculo de uma pendência a pagar ou a receber pergunta se lança. */
+      completePayable(taskId: string): void {
+        const task = tasksQuery.data?.find((candidate) => candidate.id === taskId);
+        if (task !== undefined) void completeTask.changeStage(task, "done");
+      },
       /** BR-F05: o saldo inicial pode ser zero, nunca negativo. */
       async saveOpeningBalance(amountText: string): Promise<SaveResult> {
         const amountInCents = Money.parse(amountText)?.cents ?? null;

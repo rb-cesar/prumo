@@ -449,7 +449,7 @@ prumo/
    │
    ├─ pages/                          uma pasta por rota; cada uma: *-page.tsx · model.ts · domain · components/ · testes
    │  ├─ tasks/                       tasks-page.tsx · model.ts · domain/ (TaskList, TaskDisplay, Money) · components/   F1
-   │  ├─ money/                       money-page.tsx · model.ts · domain/ (Ledger, EverydayBudget, Payables, Money) · components/   F2
+   │  ├─ money/                       money-page.tsx · model.ts · domain/ (EverydayBudget, Payables) · components/   F2
    │  ├─ today/                       today-page.tsx · model.ts · domain.ts (visão do dia)                     F4
    │  ├─ goals/                       goals-page.tsx · model.ts · domain.ts (classe Goal e ritmo)              F5
    │  └─ history/                     history-page.tsx · model.ts · domain.ts (visões derivadas)               F6
@@ -462,11 +462,14 @@ prumo/
    │  │  ├─ domain/                   pasta: dois conceitos, uma classe por arquivo                       F1
    │  │  │  ├─ task.ts · task.test.ts       classe Task
    │  │  │  └─ cycle.ts · cycle.test.ts     classe Cycle
-   │  │  └─ use-complete-task.ts · use-complete-task.test.ts   concluir com valor lança no envelope; reabrir remove   F3
+   │  │  ├─ task-completion.ts · task-completion.test.ts   (em domain/) o lançamento que concluir gera e o efeito dele
+   │  │  └─ use-complete-task.ts · complete-task-sheet.tsx   concluir com valor lança no envelope; reabrir remove   F3
    │  └─ finance/
    │     └─ domain/                   pasta: dois conceitos que não se chamam                             F2
    │        ├─ envelope.ts · envelope.test.ts          classe Envelope (situação do envelope)
-   │        └─ transaction.ts · transaction.test.ts    classe Transaction (lançamento)
+   │        ├─ transaction.ts · transaction.test.ts    classe Transaction (lançamento)
+   │        ├─ ledger.ts · ledger.test.ts              classe Ledger (contas sobre os lançamentos)
+   │        └─ money.ts · money.test.ts                classe Money (ler e mostrar valor)
    │
    ├─ data/                           único lugar com SQL. Cada arquivo: interface + adaptador SQLite
    │  │                               + fake + schema Zod + chaves de consulta

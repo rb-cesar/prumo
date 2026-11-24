@@ -1,6 +1,6 @@
 import { useState } from "react";
-import type { TransactionRowView } from "../domain";
-import { BottomSheet } from "./bottom-sheet";
+import { BottomSheet } from "../../../shared/bottom-sheet";
+import type { TransactionRowView } from "../../../shared/finance/domain/ledger";
 
 type TransactionDetailSheetProps = {
   row: TransactionRowView;

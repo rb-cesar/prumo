@@ -1,6 +1,6 @@
 import { useState } from "react";
+import { BottomSheet } from "../../../shared/bottom-sheet";
 import type { NewTransactionForm, SaveResult } from "../model";
-import { BottomSheet } from "./bottom-sheet";
 import { Segmented } from "./segmented";
 
 type AddTransactionSheetProps = {

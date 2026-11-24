@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { Envelope } from "../../../shared/finance/domain/envelope";
+import { Ledger } from "../../../shared/finance/domain/ledger";
 import { Transaction } from "../../../shared/finance/domain/transaction";
 import { EverydayBudget } from "./everyday-budget";
-import { Ledger } from "./ledger";
 
 const today = "2026-11-13";
 
