@@ -16,10 +16,13 @@ export type TransactionRecord = {
   description: string;
   /** Só o gasto tem envelope. */
   envelopeId: string | null;
+  /** A pendência que gerou este lançamento ao ser concluída; `null` se foi digitado à mão. */
+  taskId: string | null;
 };
 
-export type NewTransactionInput = Omit<TransactionRecord, "envelopeId"> & {
+export type NewTransactionInput = Omit<TransactionRecord, "envelopeId" | "taskId"> & {
   envelopeId?: string | null;
+  taskId?: string | null;
 };
 
 function validatedSnapshot(snapshot: TransactionRecord): TransactionRecord {
@@ -52,7 +55,11 @@ export class Transaction {
   }
 
   static create(input: NewTransactionInput): Transaction {
-    return new Transaction({ ...input, envelopeId: input.envelopeId ?? null });
+    return new Transaction({
+      ...input,
+      envelopeId: input.envelopeId ?? null,
+      taskId: input.taskId ?? null,
+    });
   }
 
   /** Para a camada de dados reconstruir um lançamento gravado. */
@@ -81,5 +88,8 @@ export class Transaction {
   }
   get envelopeId(): string | null {
     return this.snapshot.envelopeId;
+  }
+  get taskId(): string | null {
+    return this.snapshot.taskId;
   }
 }

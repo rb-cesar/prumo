@@ -59,6 +59,7 @@ function createFailingTransactionsData(): TransactionsData {
     listTransactions: fail,
     saveTransaction: fail,
     removeTransaction: fail,
+    removeTransactionsOfTask: fail,
     getOpeningBalanceInCents: fail,
     saveOpeningBalanceInCents: fail,
   };
@@ -145,6 +146,7 @@ describe("useMoneyModel: ações", () => {
       date: today,
       description: "Almoço",
       envelopeId: "groceries",
+      taskId: null,
     });
   });
 

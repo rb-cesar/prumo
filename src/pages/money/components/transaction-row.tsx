@@ -1,5 +1,5 @@
+import type { TransactionRowView } from "../../../shared/finance/domain/ledger";
 import { Icon } from "../../../shared/icon";
-import type { TransactionRowView } from "../domain";
 
 type TransactionRowProps = { row: TransactionRowView; onOpen: (transactionId: string) => void };
 
@@ -18,7 +18,15 @@ export function TransactionRow({ row, onOpen }: TransactionRowProps) {
       </span>
       <span className="grow min-w-0">
         <span className="task-title block">{row.description}</span>
-        <span className="tiny block">{row.categoryName}</span>
+        <span className="tiny block">
+          {row.categoryName}
+          {row.isFromTask ? (
+            <span className="chip ml-1.5" data-tone="steel">
+              <Icon name="link" size={12} />
+              de uma pendência
+            </span>
+          ) : null}
+        </span>
       </span>
       <span className="tx-amount" data-kind={row.kind}>
         {row.signedAmountText}

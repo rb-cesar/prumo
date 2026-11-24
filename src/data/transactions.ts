@@ -11,6 +11,8 @@ export type TransactionsData = {
   saveTransaction(transaction: Transaction): Promise<void>;
   /** Apaga marcando `deletedAt`, para a exclusão poder viajar numa sincronização futura. */
   removeTransaction(transactionId: string): Promise<void>;
+  /** Apaga os lançamentos que uma pendência gerou ao ser concluída (ao reabri-la). */
+  removeTransactionsOfTask(taskId: string): Promise<void>;
   /** `null` enquanto a pessoa ainda não informou o saldo inicial. */
   getOpeningBalanceInCents(): Promise<number | null>;
   saveOpeningBalanceInCents(amountInCents: number): Promise<void>;
@@ -35,6 +37,7 @@ const transactionRowSchema = z.object({
   date: z.string(),
   description: z.string(),
   envelope_id: z.string().nullable(),
+  task_id: z.string().nullable(),
 });
 
 const openingBalanceRowSchema = z.object({ opening_balance_in_cents: z.number().int() });
@@ -59,6 +62,7 @@ function transactionFromRow(unknownRow: unknown): Transaction {
     date: row.date,
     description: row.description,
     envelopeId: row.envelope_id,
+    taskId: row.task_id,
   });
 }
 
@@ -79,7 +83,7 @@ export function createSqliteTransactionsData(
 
     async listTransactions() {
       const rows = await database.queryAll<unknown>(
-        `SELECT id, kind, amount_in_cents, date, description, envelope_id
+        `SELECT id, kind, amount_in_cents, date, description, envelope_id, task_id
            FROM transactions WHERE deleted_at IS NULL`,
       );
       return rows.map(transactionFromRow);
@@ -89,12 +93,12 @@ export function createSqliteTransactionsData(
       const record = transaction.toRecord();
       await database.run(
         `INSERT INTO transactions (id, kind, amount_in_cents, date, description, envelope_id,
-                                   updated_at, deleted_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, NULL)
+                                   task_id, updated_at, deleted_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)
          ON CONFLICT (id) DO UPDATE SET
            kind = excluded.kind, amount_in_cents = excluded.amount_in_cents, date = excluded.date,
            description = excluded.description, envelope_id = excluded.envelope_id,
-           updated_at = excluded.updated_at, deleted_at = NULL`,
+           task_id = excluded.task_id, updated_at = excluded.updated_at, deleted_at = NULL`,
         [
           record.id,
           record.kind,
@@ -102,8 +106,18 @@ export function createSqliteTransactionsData(
           record.date,
           record.description,
           record.envelopeId,
+          record.taskId,
           clock.now().toISOString(),
         ],
+      );
+    },
+
+    async removeTransactionsOfTask(taskId) {
+      const removedAt = clock.now().toISOString();
+      await database.run(
+        `UPDATE transactions SET deleted_at = ?, updated_at = ?
+          WHERE task_id = ? AND deleted_at IS NULL`,
+        [removedAt, removedAt, taskId],
       );
     },
 
@@ -164,6 +178,11 @@ export function createFakeTransactionsData(seed: FakeTransactionsSeed = {}): Tra
     },
     async removeTransaction(transactionId) {
       transactionsById.delete(transactionId);
+    },
+    async removeTransactionsOfTask(taskId) {
+      for (const transaction of [...transactionsById.values()]) {
+        if (transaction.taskId === taskId) transactionsById.delete(transaction.id);
+      }
     },
     async getOpeningBalanceInCents() {
       return openingBalanceInCents;

@@ -3,6 +3,8 @@ import { createFixedClock } from "../infra/clock";
 import { createTestDatabase } from "../infra/test-database";
 import { Envelope } from "../shared/finance/domain/envelope";
 import { Transaction } from "../shared/finance/domain/transaction";
+import { Task } from "../shared/tasks/domain/task";
+import { createSqliteTasksData } from "./tasks";
 import {
   createFakeTransactionsData,
   createSqliteTransactionsData,
@@ -97,6 +99,45 @@ describe.each(adapters)("TransactionsData (%s)", (_name, createAdapter) => {
     await data.saveOpeningBalanceInCents(0);
 
     expect(await data.getOpeningBalanceInCents()).toBe(0);
+  });
+});
+
+const payElectricity = Task.create({ id: "task-1", title: "Pagar a luz" });
+const electricityBill = Transaction.create({
+  id: "tx-3",
+  kind: "expense",
+  amountInCents: 18740,
+  date: "2026-11-13",
+  description: "Pagar a luz",
+  envelopeId: "groceries",
+  taskId: "task-1",
+});
+
+describe("TransactionsData: lançamento que veio de uma pendência", () => {
+  it("fake: guarda o vínculo e remove só os lançamentos da pendência", async () => {
+    const data = createFakeTransactionsData({ envelopes: [groceries] });
+    await data.saveTransaction(electricityBill);
+    await data.saveTransaction(buyGroceries);
+
+    await data.removeTransactionsOfTask("task-1");
+
+    const stored = await data.listTransactions();
+    expect(stored.map((transaction) => transaction.id)).toEqual(["tx-1"]);
+  });
+
+  it("SQLite: guarda o vínculo e remove só os lançamentos da pendência", async () => {
+    const database = await createTestDatabase();
+    await createSqliteTasksData(database, clock).save(payElectricity);
+    const data = createSqliteTransactionsData(database, clock);
+    await data.saveTransaction(electricityBill);
+    await data.saveTransaction(buyGroceries);
+    const storedBefore = await data.listTransactions();
+    expect(storedBefore.find((transaction) => transaction.id === "tx-3")?.taskId).toBe("task-1");
+
+    await data.removeTransactionsOfTask("task-1");
+
+    const stored = await data.listTransactions();
+    expect(stored.map((transaction) => transaction.id)).toEqual(["tx-1"]);
   });
 });
 

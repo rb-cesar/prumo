@@ -7,6 +7,7 @@ const ICON_PATHS = {
     '<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3.5"/><rect x="3.5" y="8" width="17" height="12" rx="2.5"/><circle cx="16.5" cy="14" r="1.2"/>',
   arrowUp: '<path d="M12 19V5M6 11l6-6 6 6"/>',
   arrowDown: '<path d="M12 5v14M6 13l6 6 6-6"/>',
+  link: '<path d="M10 14a4 4 0 0 0 5.7 0l2.6-2.6a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-2.6 2.6a4 4 0 0 0 5.7 5.7l1-1"/>',
   vault:
     '<rect x="4" y="5" width="16" height="14" rx="3"/><circle cx="12" cy="12" r="3"/><path d="M12 9.5v1M12 13.5v1"/>',
 };

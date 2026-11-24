@@ -1,6 +1,6 @@
 import { useState } from "react";
+import { BottomSheet } from "../../../shared/bottom-sheet";
 import type { SaveResult } from "../model";
-import { BottomSheet } from "./bottom-sheet";
 
 type OpeningBalanceSheetProps = {
   onSave: (amountText: string) => Promise<SaveResult>;

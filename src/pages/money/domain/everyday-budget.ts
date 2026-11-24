@@ -1,6 +1,6 @@
 import type { Envelope } from "../../../shared/finance/domain/envelope";
+import type { Ledger } from "../../../shared/finance/domain/ledger";
 import { daysInMonth, monthOf, parseIsoDate } from "../../../shared/iso-date";
-import type { Ledger } from "./ledger";
 
 /**
  * O orçamento do dia a dia (BR-F06 e BR-F08): os envelopes que não são fixos, somados, e quanto dá

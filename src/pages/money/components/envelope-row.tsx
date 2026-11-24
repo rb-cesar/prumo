@@ -1,4 +1,4 @@
-import type { EnvelopeRowView } from "../domain";
+import type { EnvelopeRowView } from "../../../shared/finance/domain/ledger";
 
 type EnvelopeRowProps = {
   row: EnvelopeRowView;

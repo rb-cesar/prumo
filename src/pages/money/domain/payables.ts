@@ -1,6 +1,6 @@
 import { describeDay } from "../../../shared/day-labels";
+import { Money } from "../../../shared/finance/domain/money";
 import type { Task } from "../../../shared/tasks/domain/task";
-import { Money } from "./money";
 
 export type PayableRowView = {
   id: string;

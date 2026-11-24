@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { type TasksData, tasksKeys } from "../../data/tasks";
+import type { TransactionsData } from "../../data/transactions";
 import type { Clock } from "../../infra/clock";
 import type { IdGenerator } from "../../shared/ids";
 import { Cycle } from "../../shared/tasks/domain/cycle";
@@ -14,9 +15,15 @@ import {
   TaskRuleViolation,
   type TaskRuleViolationReason,
 } from "../../shared/tasks/domain/task-rule-violation";
+import { useCompleteTask } from "../../shared/tasks/use-complete-task";
 import { Money, type TaskFilter, TaskList, type TaskRowView, type TaskScope } from "./domain";
 
-export type TasksModelDeps = { tasks: TasksData; clock: Clock; generateId: IdGenerator };
+export type TasksModelDeps = {
+  tasks: TasksData;
+  transactions: TransactionsData;
+  clock: Clock;
+  generateId: IdGenerator;
+};
 
 export type TasksScreenState =
   | { status: "loading" }
@@ -54,8 +61,19 @@ async function loadSettledTasks(tasksData: TasksData, currentCycle: Cycle): Prom
   return settled;
 }
 
-export function useTasksModel({ tasks: tasksData, clock, generateId }: TasksModelDeps) {
+export function useTasksModel({
+  tasks: tasksData,
+  transactions: transactionsData,
+  clock,
+  generateId,
+}: TasksModelDeps) {
   const queryClient = useQueryClient();
+  const completeTask = useCompleteTask({
+    tasks: tasksData,
+    transactions: transactionsData,
+    clock,
+    generateId,
+  });
   const [scope, setScope] = useState<TaskScope>("cycle");
   const [stage, setStage] = useState<TaskStage>("todo");
   const [filter, setFilter] = useState<TaskFilter>("all");
@@ -84,6 +102,11 @@ export function useTasksModel({ tasks: tasksData, clock, generateId }: TasksMode
   function changeTask(taskId: string, change: (task: Task) => Task): void {
     const task = taskById(taskId);
     if (task !== undefined) saveTask.mutate(change(task));
+  }
+
+  function changeStage(taskId: string, wantedStage: (task: Task) => TaskStage): void {
+    const task = taskById(taskId);
+    if (task !== undefined) void completeTask.changeStage(task, wantedStage(task));
   }
 
   const state: TasksScreenState = (() => {
@@ -115,11 +138,17 @@ export function useTasksModel({ tasks: tasksData, clock, generateId }: TasksMode
     state,
     today,
     taskById,
+    /** A pergunta "lançar no financeiro?" quando se conclui uma pendência com valor. */
+    completion: {
+      pending: completeTask.pending,
+      choose: completeTask.confirm,
+      cancel: completeTask.cancel,
+    },
     controls: { setScope, setStage, setFilter },
     actions: {
-      toggleDone: (taskId: string) => changeTask(taskId, (task) => task.toggleDone(today)),
-      moveToStage: (taskId: string, wanted: TaskStage) =>
-        changeTask(taskId, (task) => task.moveToStage(wanted, today)),
+      toggleDone: (taskId: string) =>
+        changeStage(taskId, (task) => (task.stage === "done" ? "todo" : "done")),
+      moveToStage: (taskId: string, wanted: TaskStage) => changeStage(taskId, () => wanted),
       pullToCycle: (taskId: string) => changeTask(taskId, (task) => task.pullToCycle(currentCycle)),
       moveToBacklog: (taskId: string) => changeTask(taskId, (task) => task.moveToBacklog()),
       remove: (taskId: string) => removeTask.mutate(taskId),

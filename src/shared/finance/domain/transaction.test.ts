@@ -15,7 +15,13 @@ describe("Transaction: criação (BR-F03)", () => {
   it("cria um gasto com envelope", () => {
     const transaction = Transaction.create(buyGroceries);
 
-    expect(transaction.toRecord()).toEqual(buyGroceries);
+    expect(transaction.toRecord()).toEqual({ ...buyGroceries, taskId: null });
+  });
+
+  it("guarda de qual pendência o lançamento veio", () => {
+    const transaction = Transaction.create({ ...buyGroceries, taskId: "task-1" });
+
+    expect(transaction.taskId).toBe("task-1");
   });
 
   it("cria uma entrada sem envelope", () => {

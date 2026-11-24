@@ -1,7 +1,7 @@
 import { useState } from "react";
+import { BottomSheet } from "../../../shared/bottom-sheet";
 import type { TaskStage } from "../../../shared/tasks/domain/task";
 import type { TaskDetailView } from "../domain";
-import { BottomSheet } from "./bottom-sheet";
 import { Segmented } from "./segmented";
 
 type TaskDetailSheetProps = {
