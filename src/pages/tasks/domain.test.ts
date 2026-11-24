@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { Cycle } from "../../shared/tasks/domain/cycle";
 import { type NewTaskInput, Task } from "../../shared/tasks/domain/task";
 import {
-  describeDay,
   formatMoneyFromCents,
   parseMoneyToCents,
   tasksInBacklog,
@@ -17,20 +16,6 @@ const currentCycle = Cycle.containing(today);
 function makeTask(overrides: Partial<NewTaskInput> = {}): Task {
   return Task.create({ id: "task-1", title: "Pagar conta de luz", ...overrides });
 }
-
-describe("describeDay", () => {
-  it("usa Hoje, Ontem e Amanhã para os dias vizinhos", () => {
-    expect([
-      describeDay("2026-11-13", today),
-      describeDay("2026-11-12", today),
-      describeDay("2026-11-14", today),
-    ]).toEqual(["Hoje", "Ontem", "Amanhã"]);
-  });
-
-  it("escreve os outros dias com o dia da semana", () => {
-    expect(describeDay("2026-11-18", today)).toBe("qua, 18 nov");
-  });
-});
 
 describe("formatMoneyFromCents", () => {
   it("formata em real, com vírgula nos centavos e ponto nos milhares", () => {

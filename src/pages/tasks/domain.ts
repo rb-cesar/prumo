@@ -3,7 +3,7 @@
  * Regra pura (sem tela, banco ou relógio); "hoje" entra por parâmetro.
  */
 
-import { daysBetween, parseIsoDate } from "../../shared/iso-date";
+import { describeDay } from "../../shared/day-labels";
 import type { Cycle } from "../../shared/tasks/domain/cycle";
 import {
   type MoneyDirection,
@@ -25,32 +25,6 @@ export type TaskRowView = {
   chips: ChipView[];
   money: { amountText: string; label: string; direction: MoneyDirection } | null;
 };
-
-const WEEKDAY_NAMES_SHORT = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
-const MONTH_NAMES_SHORT = [
-  "jan",
-  "fev",
-  "mar",
-  "abr",
-  "mai",
-  "jun",
-  "jul",
-  "ago",
-  "set",
-  "out",
-  "nov",
-  "dez",
-];
-
-/** "Hoje", "Ontem", "Amanhã" ou, por exemplo, "qua, 18 nov". */
-export function describeDay(isoDate: string, today: string): string {
-  const daysFromToday = daysBetween(today, isoDate);
-  if (daysFromToday === 0) return "Hoje";
-  if (daysFromToday === -1) return "Ontem";
-  if (daysFromToday === 1) return "Amanhã";
-  const date = parseIsoDate(isoDate);
-  return `${WEEKDAY_NAMES_SHORT[date.getUTCDay()]}, ${date.getUTCDate()} ${MONTH_NAMES_SHORT[date.getUTCMonth()]}`;
-}
 
 /** "R$ 1.234,56", a partir de centavos inteiros. */
 export function formatMoneyFromCents(amountInCents: number): string {

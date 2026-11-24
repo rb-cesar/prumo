@@ -36,8 +36,8 @@ Resumo; se divergir de `doc/standards/`, vale a cópia. Entre parênteses, a se�
 - Layout e regra em arquivos diferentes, lado a lado: `*-page.tsx` só desenha; `model.ts` é o hook da
   tela; `domain.ts` (ou `domain/`) guarda a regra pura; `components/` é da tela (§6.1).
 - A tela recebe dados por uma interface de `data/`; nunca há SQL na tela (§6.7).
-- Domínio: classe imutável para conceito com identidade e regra (converte com `fromRecord` e `toRecord`);
-  função para cálculo e exibição. Vira pasta `domain/` ao passar de ~300 linhas ou com dois grupos de
+- Domínio: classe imutável para conceito com identidade e regra (converte com `fromRecord` e `toRecord`).
+  Cálculo e exibição das telas também em classes, uma por conceito (ADR 0003; pendências ainda em funções). Vira pasta `domain/` ao passar de ~300 linhas ou com dois grupos de
   regra que não se chamam (§3.6).
 - Regra nasce na tela; a segunda tela copia; sobe para `shared/` na terceira. Peça criada para várias
   telas desde o começo nasce em `shared/`. Página nunca importa de outra página (§6.3).

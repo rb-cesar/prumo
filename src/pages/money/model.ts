@@ -3,26 +3,23 @@ import { useState } from "react";
 import { type TasksData, tasksKeys } from "../../data/tasks";
 import { type TransactionsData, transactionsKeys } from "../../data/transactions";
 import type { Clock } from "../../infra/clock";
+import { describeMonth, monthName } from "../../shared/day-labels";
 import {
   FinanceRuleViolation,
   type FinanceRuleViolationReason,
 } from "../../shared/finance/domain/finance-rule-violation";
 import { Transaction } from "../../shared/finance/domain/transaction";
 import type { IdGenerator } from "../../shared/ids";
+import { monthOf } from "../../shared/iso-date";
 import {
-  describeMonth,
   type EnvelopeRowView,
-  groupTransactionsByDay,
+  Ledger,
+  Money,
   type MonthSummaryView,
-  monthName,
-  monthOf,
   type PayableRowView,
-  parseMoneyToCents,
+  Payables,
   type TransactionDayGroup,
   type TransactionRowView,
-  toEnvelopeRowView,
-  toMonthSummaryView,
-  toPayableRowViews,
 } from "./domain";
 
 export type MoneyModelDeps = {
@@ -112,18 +109,19 @@ export function useMoneyModel({
     }
 
     const { envelopes, transactions, openingBalanceInCents } = financeQuery.data;
+    const ledger = new Ledger(transactions);
     const filterEnvelope = envelopes.find((envelope) => envelope.id === envelopeFilterId);
     return {
       status: "ready",
       monthText: describeMonth(today),
       monthName: monthName(today),
-      summary: toMonthSummaryView(transactions, openingBalanceInCents ?? 0, month),
+      summary: ledger.toMonthSummaryView(openingBalanceInCents ?? 0, month),
       needsOpeningBalance: openingBalanceInCents === null,
-      envelopes: envelopes.map((envelope) => toEnvelopeRowView(envelope, transactions, month)),
+      envelopes: envelopes.map((envelope) => ledger.toEnvelopeRowView(envelope, month)),
       envelopeFilter:
         filterEnvelope === undefined ? null : { id: filterEnvelope.id, name: filterEnvelope.name },
-      payables: toPayableRowViews(tasksQuery.data, today),
-      dayGroups: groupTransactionsByDay(transactions, envelopes, today, envelopeFilterId),
+      payables: new Payables(tasksQuery.data).toRowViews(today),
+      dayGroups: ledger.groupedByDay(envelopes, today, envelopeFilterId),
     } as const;
   })();
 
@@ -149,7 +147,7 @@ export function useMoneyModel({
     actions: {
       /** BR-F03: a data é sempre a de hoje. */
       async addTransaction(form: NewTransactionForm): Promise<SaveResult> {
-        const amountInCents = parseMoneyToCents(form.amountText);
+        const amountInCents = Money.parse(form.amountText)?.cents ?? null;
         if (amountInCents === null) return { ok: false, reason: "amount-not-a-number" };
         const chosenEnvelopeId = form.envelopeId === "" ? null : form.envelopeId;
         try {
@@ -171,7 +169,7 @@ export function useMoneyModel({
       removeTransaction: (transactionId: string) => removeTransaction.mutate(transactionId),
       /** BR-F05: o saldo inicial pode ser zero, nunca negativo. */
       async saveOpeningBalance(amountText: string): Promise<SaveResult> {
-        const amountInCents = parseMoneyToCents(amountText);
+        const amountInCents = Money.parse(amountText)?.cents ?? null;
         if (amountInCents === null) return { ok: false, reason: "amount-not-a-number" };
         await saveOpeningBalance.mutateAsync(amountInCents);
         return { ok: true };
