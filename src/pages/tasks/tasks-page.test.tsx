@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { createFakeTasksData } from "../../data/tasks";
+import { createFakeTransactionsData } from "../../data/transactions";
 import { createFixedClock } from "../../infra/clock";
 import { ServicesProvider } from "../../shared/services";
 import { Cycle } from "../../shared/tasks/domain/cycle";
@@ -14,7 +15,12 @@ const today = "2026-11-13";
 
 function renderPage(seed: Task[] = []) {
   const tasks = createFakeTasksData(seed);
-  const services = { tasks, clock: createFixedClock(today), generateId: () => "new-id" };
+  const services = {
+    tasks,
+    transactions: createFakeTransactionsData(),
+    clock: createFixedClock(today),
+    generateId: () => "new-id",
+  };
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <QueryClientProvider client={queryClient}>

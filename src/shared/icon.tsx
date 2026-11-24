@@ -1,7 +1,14 @@
-/** Ícones de traço do Design System Prumo (grade de 24, traço de 1,8). Aqui só os que esta tela usa. */
+/** Ícones de traço do Design System Prumo (grade de 24, traço de 1,8). Aqui só os que o app já usa. */
 const ICON_PATHS = {
   check: '<path d="m6 12.5 4 4 8-9"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
+  tasks: '<circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.3 2.4 2.4 4.6-5"/>',
+  money:
+    '<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3.5"/><rect x="3.5" y="8" width="17" height="12" rx="2.5"/><circle cx="16.5" cy="14" r="1.2"/>',
+  arrowUp: '<path d="M12 19V5M6 11l6-6 6 6"/>',
+  arrowDown: '<path d="M12 5v14M6 13l6 6 6-6"/>',
+  vault:
+    '<rect x="4" y="5" width="16" height="14" rx="3"/><circle cx="12" cy="12" r="3"/><path d="M12 9.5v1M12 13.5v1"/>',
 };
 
 export function Icon({ name, size = 20 }: { name: keyof typeof ICON_PATHS; size?: number }) {

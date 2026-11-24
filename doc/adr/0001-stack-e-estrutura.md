@@ -44,7 +44,7 @@ local** como fonte de verdade. **Sem backend na v1.**
 | Dados | SQLite via `@capacitor-community/sqlite` | Nativo no Android; no navegador roda por sql.js direto, com o banco guardado no IndexedDB (o jeep-sqlite foi descartado em 2026-11-18, veja os pontos a verificar). Consultas por envelope e mês pedem SQL |
 | Acesso a dados | SQL puro + migrações `.sql`, sem ORM, só em `data/` | Prisma não roda no aparelho; SQL puro basta nesse tamanho |
 | Validação | Zod na borda do adaptador, em `data/` | Linhas do banco e o arquivo de backup importado são entrada não confiável (§4.2 do `BACKEND`, §12.3) |
-| Domínio | Classes imutáveis para conceitos com identidade e regra (`Task`, `Envelope`, `Goal`); funções puras para cálculo e exibição | Preferência registrada no §3.6. A classe recusa estado inválido no construtor e converte com `fromRecord` e `toRecord` |
+| Domínio | Classes imutáveis, uma por conceito: com identidade e regra (`Task`, `Envelope`, `Goal`) e também para cálculo e exibição das telas (`Ledger`, `TaskList`). Mudou no ADR 0003 | Preferência registrada no §3.6. A classe recusa estado inválido no construtor e converte com `fromRecord` e `toRecord`; os recortes de uma lista devolvem outra lista e se encadeiam |
 | Lembretes | `@capacitor/local-notifications` atrás de uma interface `Reminders` | Dependência externa, então interface + fake de teste |
 | Testes | Vitest; Testing Library; SQLite real em memória com as mesmas migrações; Playwright para 3 a 5 fluxos | §7 e §7.6. Mock de banco não entra |
 | Lint, tipos, pacotes | Biome, `tsc --noEmit` estrito, pnpm | Igual ao `client-web`; scripts `dev · build · check · lint · typecheck · test · e2e` |
@@ -52,8 +52,9 @@ local** como fonte de verdade. **Sem backend na v1.**
 **Regras de dados que o protótipo ainda não segue** (§12.4):
 
 - **Dinheiro em centavos inteiros** (`amountInCents`). O protótipo usa decimais e soma com
-  erro de ponto flutuante. Formatação em BRL só na camada visual. Não há classe `Money` por ora:
-  um número com nome claro basta, e criá-la antes de ser preciso seria estrutura por antecipação.
+  erro de ponto flutuante. Formatação em BRL só na camada visual. A classe `Money` (ler o que a
+  pessoa digitou e mostrar em reais) nasceu na fatia 2, quando a tela de finanças precisou; as
+  pendências têm a sua própria cópia, e ela sobe para `shared/` na terceira tela (§6.3).
 - **Datas como texto `AAAA-MM-DD`** (data local, sem hora), e o **relógio entra por parâmetro**
   (`today`), com valor padrão (R3). É o que deixa "pode gastar hoje" testável.
 - **Pendência com valor é um registro só** (`tasks` com valor, sentido e envelope opcionais),
@@ -76,19 +77,20 @@ Ela fica lá, e só lá, para haver uma fonte só; este ADR guarda as decisões 
 | Função do protótipo | Destino |
 |---|---|
 | Situação do envelope (`envelopeStatus`) | classe `Envelope` em `shared/finance/domain/envelope.ts` |
-| `everydayBudgetSnapshot` (o "pode gastar hoje") e totais do mês | função em `shared/finance/domain/allowance.ts`, com o relógio por parâmetro |
+| `everydayBudgetSnapshot` (o "pode gastar hoje") | classe `EverydayBudget` em `pages/money/domain/everyday-budget.ts`, com o relógio por parâmetro; a regra das três telas (§6.3) decide quando sobe para `shared/` |
+| Totais do mês, saldo, lançamentos por dia | classe `Ledger` em `pages/money/domain/ledger.ts`, com filtros que se encadeiam |
 | `isTaskOverdue`, concluir e reabrir | métodos da classe `Task` em `shared/tasks/domain/task.ts`; cada método que "muda" devolve outra instância |
 | Ciclo semanal, ordenação por prazo e prioridade | classe `Cycle` em `shared/tasks/domain/cycle.ts` |
-| Montar a linha de pendência (rótulo de prazo, tom, valor) | `components/task-row/domain.ts`, função de exibição |
-| `goalSnapshot`, `describeRequiredPace` | `pages/goals/domain.ts` (classe `Goal` e a função do ritmo) |
-| `buildMonthInsights`, `buildCycleInsights`, cronologia | `pages/history/domain.ts`, funções que derivam visões |
+| Montar a linha de pendência (rótulo de prazo, tom, valor) | classe `TaskDisplay` em `pages/tasks/domain/task-display.ts`; vai para `components/task-row/` quando a linha aparecer em mais telas |
+| `goalSnapshot`, `describeRequiredPace` | `pages/goals/domain/` (classe `Goal` e a regra do ritmo) |
+| `buildMonthInsights`, `buildCycleInsights`, cronologia | `pages/history/domain/`, classes que derivam visões |
 | Concluir tarefa com valor e lançar (e remover ao reabrir) | `shared/tasks/use-complete-task.ts`, porque quatro telas precisam dela; ao terminar, invalida as consultas afetadas |
 
 Uma regra nasce na tela, a segunda tela copia e ela sobe para `shared/` na terceira (§6.3). A
-exceção é uma peça criada para várias telas desde o começo: `use-complete-task` nasce em `shared/`
-na fatia 3 e leva a `Task` e o `Cycle` junto, porque um hook compartilhado não pode importar de
-`pages/`. Por isso as duas classes começam em `pages/tasks/domain.ts` (fatia 1) e sobem na fatia 3;
-a tabela mostra o destino final, não o ponto de partida.
+exceção é uma peça criada para várias telas desde o começo. Os conceitos que o banco também
+precisa (`Task`, `Cycle`, `Envelope`, `Transaction`) nascem direto em `shared/<área>/domain/`, porque
+`data/` não pode importar de `pages/`. `iso-date`, `day-labels` e `Icon` também ficam em `shared/`
+(ADR 0003). `use-complete-task` nasce em `shared/` na fatia 3.
 
 ### Por que cada escolha de estrutura é arquivo ou pasta
 
@@ -97,10 +99,11 @@ escrito (§6.4, §11.3):
 
 | Peça | Forma | Por quê |
 |---|---|---|
-| `shared/finance/domain/` | **pasta** | tem dois conceitos que não se chamam (a situação do envelope e o valor diário), e com classes o natural é uma por arquivo; passou do gatilho do §3.6 |
+| `shared/finance/domain/` | **pasta** | tem dois conceitos que não se chamam (`Envelope` e `Transaction`), e com classes o natural é uma por arquivo; passou do gatilho do §3.6 |
 | `shared/tasks/domain/` | **pasta** | `Task` e `Cycle` são conceitos distintos, cada um com identidade e regra própria |
+| `pages/tasks/domain/` e `pages/money/domain/` | **pasta** | com classes, uma por conceito e um arquivo por classe (ADR 0003), com `index.ts` como porta única |
 | `pages/today/domain.ts` | **arquivo** | só regras de exibição da tela, de um conceito só; cabe em um arquivo até um gatilho dizer o contrário |
-| `pages/goals/domain.ts` | **arquivo** | um conceito (`Goal`) e uma função de ritmo, que se chamam |
+| `pages/goals/domain.ts` | **arquivo** | um conceito (`Goal`) e a regra do ritmo, que se chamam |
 | `components/task-row/` | **pasta** | carrega regra de exibição própria (`domain.ts`) e aparece em quatro telas |
 | `components/button.tsx` | **arquivo** | só visual |
 | `data/tasks.ts` | **arquivo** | interface, adaptador SQLite e fake de um recurso cabem juntos; vira pasta se o arquivo passar de ~300 linhas |

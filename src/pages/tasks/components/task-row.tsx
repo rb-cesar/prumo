@@ -1,5 +1,5 @@
+import { Icon } from "../../../shared/icon";
 import type { TaskRowView } from "../domain";
-import { Icon } from "./icon";
 
 type TaskRowProps = {
   row: TaskRowView;

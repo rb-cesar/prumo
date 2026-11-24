@@ -29,3 +29,14 @@ export function daysBetween(fromIsoDate: string, toIsoDate: string): number {
       MILLISECONDS_PER_DAY,
   );
 }
+
+/** O mês de um dia, no formato `AAAA-MM`. */
+export function monthOf(isoDate: string): string {
+  return isoDate.slice(0, 7);
+}
+
+/** Quantos dias tem o mês do dia dado (fevereiro de ano bissexto tem 29). */
+export function daysInMonth(isoDate: string): number {
+  const date = parseIsoDate(isoDate);
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)).getUTCDate();
+}
