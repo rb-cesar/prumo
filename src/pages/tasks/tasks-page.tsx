@@ -150,15 +150,6 @@ export function TasksPage() {
         />
       ) : null}
 
-      {model.completion.pending === null ? null : (
-        <CompleteTaskSheet
-          pending={model.completion.pending}
-          today={model.today}
-          onChoose={model.completion.choose}
-          onCancel={model.completion.cancel}
-        />
-      )}
-
       {openSheet?.kind === "detail" && detailTask !== undefined ? (
         <TaskDetailSheet
           detail={new TaskDisplay(detailTask).toDetailView(model.today)}
@@ -170,6 +161,16 @@ export function TasksPage() {
           onClose={() => setOpenSheet(null)}
         />
       ) : null}
+
+      {/* Por último de propósito: a folha de concluir abre por cima da de detalhes. */}
+      {model.completion.pending === null ? null : (
+        <CompleteTaskSheet
+          pending={model.completion.pending}
+          today={model.today}
+          onChoose={model.completion.choose}
+          onCancel={model.completion.cancel}
+        />
+      )}
     </div>
   );
 }

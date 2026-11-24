@@ -137,6 +137,20 @@ describe("TasksPage", () => {
     expect(await transactions.listTransactions()).toEqual([]);
   });
 
+  it("a pergunta de concluir abre por cima da folha de detalhes", async () => {
+    renderPage([paidTask("groceries")]);
+    fireEvent.click(await screen.findByText("Fazer a feira"));
+    const detailSheet = within(await screen.findByRole("dialog", { name: "Fazer a feira" }));
+
+    fireEvent.click(detailSheet.getByRole("button", { name: "Feito" }));
+
+    await waitFor(() => {
+      const openSheets = screen.getAllByRole("dialog");
+      const topSheet = openSheets[openSheets.length - 1];
+      expect(topSheet?.getAttribute("aria-label")).toBe("Concluir e lançar no financeiro?");
+    });
+  });
+
   it("reabrir a pendência remove o lançamento que ela gerou", async () => {
     const { transactions } = renderPage([paidTask("groceries")]);
     fireEvent.click(await screen.findByRole("button", { name: "Concluir: Fazer a feira" }));
