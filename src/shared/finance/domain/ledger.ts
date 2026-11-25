@@ -63,6 +63,21 @@ export class Ledger {
     return this.keeping((transaction) => transaction.envelopeId === envelopeId);
   }
 
+  /** Só os lançamentos dos envelopes dados (por exemplo, os do dia a dia). */
+  ofEnvelopes(envelopeIds: readonly string[]): Ledger {
+    return this.keeping(
+      (transaction) =>
+        transaction.envelopeId !== null && envelopeIds.includes(transaction.envelopeId),
+    );
+  }
+
+  /** Só o que caiu entre os dois dias, contando os próprios dias. */
+  between(firstDay: string, lastDay: string): Ledger {
+    return this.keeping(
+      (transaction) => transaction.date >= firstDay && transaction.date <= lastDay,
+    );
+  }
+
   // ------------------------------------------------------------ contas
 
   totalInCents(): number {
@@ -146,6 +161,16 @@ export class Ledger {
         });
     }
     return groups.map(({ dayText, rows }) => ({ dayText, rows }));
+  }
+
+  /** Cada lançamento como linha de tela, com o dia dele, na ordem em que estão. */
+  toDatedRowViews(
+    envelopes: readonly Envelope[],
+  ): Array<{ date: string; row: TransactionRowView }> {
+    return this.transactions.map((transaction) => ({
+      date: transaction.date,
+      row: this.rowViewOf(transaction, envelopes),
+    }));
   }
 
   // ------------------------------------------------------------ por dentro

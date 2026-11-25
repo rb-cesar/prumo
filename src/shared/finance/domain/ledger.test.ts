@@ -184,3 +184,35 @@ describe("Ledger: lista de lançamentos (BR-F09)", () => {
     expect(groups.flatMap((group) => group.rows.map((row) => row.id))).toEqual(["a"]);
   });
 });
+
+describe("Ledger: por envelopes e por intervalo de dias", () => {
+  it("fica só com os lançamentos dos envelopes dados e ignora os que não têm envelope", () => {
+    const income = Transaction.create({
+      id: "tx-in",
+      kind: "income",
+      amountInCents: 620000,
+      date: today,
+      description: "Salário",
+    });
+    const ledger = new Ledger([
+      expense("a", "housing", 165000),
+      expense("b", "groceries", 14160),
+      expense("c", "leisure", 4800),
+      income,
+    ]);
+
+    expect(ledger.ofEnvelopes(["groceries", "leisure"]).totalInCents()).toBe(18960);
+    expect(ledger.ofEnvelopes([]).totalInCents()).toBe(0);
+  });
+
+  it("conta os dois dias das pontas do intervalo", () => {
+    const ledger = new Ledger([
+      expense("a", "groceries", 100, "2026-11-21"),
+      expense("b", "groceries", 200, "2026-11-22"),
+      expense("c", "groceries", 400, "2026-11-28"),
+      expense("d", "groceries", 800, "2026-11-29"),
+    ]);
+
+    expect(ledger.between("2026-11-22", "2026-11-28").totalInCents()).toBe(600);
+  });
+});

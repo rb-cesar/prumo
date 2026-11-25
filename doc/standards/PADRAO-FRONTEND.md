@@ -452,7 +452,7 @@ prumo/
    │  ├─ money/                       money-page.tsx · model.ts · domain/ (EverydayBudget, Payables) · components/   F2
    │  ├─ today/                       today-page.tsx · model.ts · domain/ (EverydayBudget, TodayAgenda, CycleProgress) · components/   F4
    │  ├─ goals/                       goals-page.tsx · model.ts · domain/ (GoalBoard, RequiredPace) · components/   F5
-   │  └─ history/                     history-page.tsx · model.ts · domain.ts (visões derivadas)               F6
+   │  └─ history/                     history-page.tsx · model.ts · domain/ (MonthlyHistory, CycleHistory, Timeline) · components/   F6
    │
    ├─ shared/                         regra ou utilitário de duas ou mais telas, sem ser visual
    │  ├─ services.tsx                 createServices · ServicesProvider · useServices                     F1
@@ -463,13 +463,15 @@ prumo/
    │  │  │  ├─ task.ts · task.test.ts       classe Task
    │  │  │  └─ cycle.ts · cycle.test.ts     classe Cycle
    │  │  ├─ task-completion.ts · task-completion.test.ts   (em domain/) o lançamento que concluir gera e o efeito dele
-   │  │  └─ use-complete-task.ts · complete-task-sheet.tsx   concluir com valor lança no envelope; reabrir remove   F3
+   │  │  ├─ use-complete-task.ts · complete-task-sheet.tsx   concluir com valor lança no envelope; reabrir remove   F3
+   │  │  └─ settle-ended-cycles.ts   BR-T08 e BR-H08: devolve ao backlog e anota o fechamento do ciclo   F6
    │  ├─ finance/
    │  │  └─ domain/                   pasta: dois conceitos que não se chamam                             F2
    │  │     ├─ envelope.ts · envelope.test.ts          classe Envelope (situação do envelope)
    │  │     ├─ transaction.ts · transaction.test.ts    classe Transaction (lançamento)
    │  │     ├─ ledger.ts · ledger.test.ts              classe Ledger (contas sobre os lançamentos)
-   │  │     └─ money.ts · money.test.ts                classe Money (ler e mostrar valor)
+   │  │     ├─ money.ts · money.test.ts                classe Money (ler e mostrar valor)
+   │  │     └─ weekly-plan.ts · weekly-plan.test.ts    classe WeeklyPlan (plano semanal do dia a dia)
    │  └─ goals/
    │     └─ domain/                   pasta: meta e o que se calcula dela para várias telas               F5
    │        ├─ goal.ts · goal.test.ts                  classe Goal (meta de guardar)
@@ -480,6 +482,7 @@ prumo/
    │  ├─ tasks.ts · tasks.test.ts                                                                         F1
    │  ├─ transactions.ts · transactions.test.ts                                                           F2
    │  ├─ goals.ts · goals.test.ts                                                                         F5
+   │  ├─ cycles.ts · cycles.test.ts   fechamento e revisão dos ciclos                                       F6
    │  └─ backup.ts · backup.test.ts   schema e versão do arquivo de backup                                  F8
    │
    └─ infra/                          capacidades técnicas, cada uma atrás de uma interface, com fake

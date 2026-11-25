@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { useServices } from "../../shared/services";
 import { CompleteTaskSheet } from "../../shared/tasks/complete-task-sheet";
 import { FocusTaskRow } from "./components/focus-task-row";
+import { ReviewSheet } from "./components/review-sheet";
 import { useTodayModel } from "./model";
 
 export function TodayPage() {
   const model = useTodayModel(useServices());
+  const [isReviewSheetOpen, setIsReviewSheetOpen] = useState(false);
   const { state } = model;
 
   return (
@@ -111,6 +114,37 @@ export function TodayPage() {
                   <span style={{ width: `${Math.round(state.cycle.doneRatio * 100)}%` }} />
                 </span>
               </div>
+              <div>
+                <div className="goal-line">
+                  <span>Gasto do dia a dia na semana</span>
+                  <strong>
+                    {state.cycle.weeklySpending.spentText} de {state.cycle.weeklySpending.planText}
+                  </strong>
+                </div>
+                <span
+                  className="bar mt-1.5 block"
+                  data-tone={
+                    state.cycle.weeklySpending.tone === "ok"
+                      ? undefined
+                      : state.cycle.weeklySpending.tone
+                  }
+                >
+                  <span
+                    style={{ width: `${Math.round(state.cycle.weeklySpending.fillRatio * 100)}%` }}
+                  />
+                </span>
+              </div>
+              {state.cycle.isReviewed ? (
+                <p className="small font-semibold text-pos-ink">Revisão do ciclo salva.</p>
+              ) : (
+                <button
+                  className="btn btn-secondary btn-block"
+                  type="button"
+                  onClick={() => setIsReviewSheetOpen(true)}
+                >
+                  Fazer a revisão do ciclo
+                </button>
+              )}
             </section>
 
             <section>
@@ -177,6 +211,19 @@ export function TodayPage() {
           </>
         ) : null}
       </main>
+
+      {isReviewSheetOpen && state.status === "ready" ? (
+        <ReviewSheet
+          cycleLabel={state.cycle.cycleLabel}
+          summary={{
+            doneText: state.cycle.summaryText,
+            spendingText: `${state.cycle.weeklySpending.spentText} de ${state.cycle.weeklySpending.planText}`,
+            savedText: state.stats.savedText,
+          }}
+          onSave={model.actions.saveReview}
+          onClose={() => setIsReviewSheetOpen(false)}
+        />
+      ) : null}
 
       {model.completion.pending === null ? null : (
         <CompleteTaskSheet

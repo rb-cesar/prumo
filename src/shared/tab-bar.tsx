@@ -6,6 +6,7 @@ const TABS = [
   { path: "/tasks", label: "Pendências", icon: "tasks" },
   { path: "/money", label: "Finanças", icon: "money" },
   { path: "/goals", label: "Metas", icon: "goals" },
+  { path: "/history", label: "Histórico", icon: "history" },
 ] as const;
 
 /** Navegação principal, fixa na base. Cada tela nova do app ganha uma aba aqui. */

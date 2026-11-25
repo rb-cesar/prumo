@@ -12,6 +12,8 @@ const ICON_PATHS = {
   link: '<path d="M10 14a4 4 0 0 0 5.7 0l2.6-2.6a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-2.6 2.6a4 4 0 0 0 5.7 5.7l1-1"/>',
   goals:
     '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.8"/>',
+  history:
+    '<path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1L3.5 8.5"/><path d="M3.5 3.8v4.7h4.7"/><path d="M12 7.5V12l3 2"/>',
   vault:
     '<rect x="4" y="5" width="16" height="14" rx="3"/><circle cx="12" cy="12" r="3"/><path d="M12 9.5v1M12 13.5v1"/>',
 };

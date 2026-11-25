@@ -6,7 +6,8 @@ export type TaskRuleViolationReason =
   | "doing-only-in-cycle"
   | "done-date-mismatch"
   | "done-task-stays-in-cycle"
-  | "cycle-must-start-on-sunday";
+  | "cycle-must-start-on-sunday"
+  | "review-needs-an-answer";
 
 /** Erro de regra, nomeado: a tela traduz o motivo em texto (R5). */
 export class TaskRuleViolation extends Error {

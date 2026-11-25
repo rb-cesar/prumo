@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { describe, expect, it } from "vitest";
+import { createFakeCyclesData } from "../../data/cycles";
 import { createFakeGoalsData } from "../../data/goals";
 import { createFakeTasksData, type TasksData } from "../../data/tasks";
 import { createFakeTransactionsData, type TransactionsData } from "../../data/transactions";
@@ -33,8 +34,10 @@ function renderModel(
   tasks: TasksData,
   transactions: TransactionsData = fakeFinance(),
   goals: Goal[] = [],
+  cycles = createFakeCyclesData(),
 ) {
   const deps: TodayModelDeps = {
+    cycles,
     goals: createFakeGoalsData(goals),
     tasks,
     transactions,
@@ -172,7 +175,7 @@ describe("useTodayModel: o que mostra", () => {
     expect(result.current.state).toMatchObject({ stats: { accountBalanceText: "—" } });
   });
 
-  it("trata como backlog o que sobrou de um ciclo que acabou, sem gravar", async () => {
+  it("devolve ao backlog, gravando, o que sobrou de um ciclo que acabou, e anota o fechamento", async () => {
     const lastWeek = Cycle.containing("2026-11-03");
     const leftover = Task.create({
       id: "old",
@@ -180,12 +183,14 @@ describe("useTodayModel: o que mostra", () => {
       cycle: lastWeek,
     }).moveToStage("doing", "2026-11-03");
     const tasks = createFakeTasksData([leftover]);
+    const cycles = createFakeCyclesData();
 
-    const { result } = renderModel(tasks);
+    const { result } = renderModel(tasks, fakeFinance(), [], cycles);
 
     await waitFor(() => expect(result.current.state.status).toBe("ready"));
     expect(result.current.state).toMatchObject({ focusRows: [] });
-    expect((await tasks.list())[0]?.isInBacklog).toBe(false);
+    expect((await tasks.list())[0]?.isInBacklog).toBe(true);
+    expect(await cycles.listClosings()).toEqual([{ cycleStart: lastWeek.start, plannedCount: 1 }]);
   });
 });
 
