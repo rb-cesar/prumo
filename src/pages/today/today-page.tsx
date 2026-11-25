@@ -147,12 +147,32 @@ export function TodayPage() {
               <h2 className="section-title">
                 <span>Meta em foco</span>
               </h2>
-              <div className="card">
-                <div className="empty">
-                  <strong>Nenhuma meta ainda</strong>
-                  As metas chegam em uma próxima etapa do Prumo.
+              {state.focusGoal.status === "in-focus" ? (
+                <div className="card stack">
+                  <div className="row between">
+                    <strong>{state.focusGoal.title}</strong>
+                    <span className="display-number">{state.focusGoal.percentText}</span>
+                  </div>
+                  <span className="bar block">
+                    <span style={{ width: `${Math.round(state.focusGoal.ratio * 100)}%` }} />
+                  </span>
+                  <div className="goal-line">
+                    <span>{state.focusGoal.savedText}</span>
+                    <span>{state.focusGoal.timeLeftText}</span>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="card">
+                  <div className="empty">
+                    <strong>
+                      {state.focusGoal.status === "all-completed"
+                        ? "Todas as metas concluídas"
+                        : "Nenhuma meta ainda"}
+                    </strong>
+                    Crie uma meta na aba Metas.
+                  </div>
+                </div>
+              )}
             </section>
           </>
         ) : null}

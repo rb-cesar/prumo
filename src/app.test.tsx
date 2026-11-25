@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { App } from "./app";
+import { createFakeGoalsData } from "./data/goals";
 import { createFakeTasksData } from "./data/tasks";
 import { createFakeTransactionsData } from "./data/transactions";
 import { createFixedClock } from "./infra/clock";
@@ -12,6 +13,7 @@ afterEach(cleanup);
 describe("App", () => {
   it("abre na tela Hoje", () => {
     const services = {
+      goals: createFakeGoalsData(),
       tasks: createFakeTasksData(),
       transactions: createFakeTransactionsData(),
       clock: createFixedClock("2026-11-13"),

@@ -2,11 +2,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { describe, expect, it } from "vitest";
+import { createFakeGoalsData } from "../../data/goals";
 import { createFakeTasksData, type TasksData } from "../../data/tasks";
 import { createFakeTransactionsData, type TransactionsData } from "../../data/transactions";
 import { createFixedClock } from "../../infra/clock";
 import { Envelope } from "../../shared/finance/domain/envelope";
 import { Transaction } from "../../shared/finance/domain/transaction";
+import { Goal } from "../../shared/goals/domain/goal";
 import { Cycle } from "../../shared/tasks/domain/cycle";
 import { Task } from "../../shared/tasks/domain/task";
 import { type TodayModelDeps, useTodayModel } from "./model";
@@ -27,8 +29,13 @@ function createWrapper() {
     createElement(QueryClientProvider, { client: queryClient }, children);
 }
 
-function renderModel(tasks: TasksData, transactions: TransactionsData = fakeFinance()) {
+function renderModel(
+  tasks: TasksData,
+  transactions: TransactionsData = fakeFinance(),
+  goals: Goal[] = [],
+) {
   const deps: TodayModelDeps = {
+    goals: createFakeGoalsData(goals),
     tasks,
     transactions,
     clock: createFixedClock(today),
@@ -120,6 +127,42 @@ describe("useTodayModel: o que mostra", () => {
       upcomingRows: [{ title: "Dentista", dayText: "dom, 15 nov" }],
       cycle: { cycleLabel: "8 a 14 nov", summaryText: "0 de 1" },
     });
+  });
+
+  it("mostra a meta em foco com o aporte que já foi feito", async () => {
+    const trip = Goal.fromRecord({
+      id: "trip",
+      title: "Viagem",
+      targetInCents: 100000,
+      initialSavedInCents: 0,
+      dueDate: "2026-12-13",
+    });
+    const finance = fakeFinance({
+      transactions: [
+        Transaction.create({
+          id: "tx-9",
+          kind: "saving",
+          amountInCents: 40000,
+          date: today,
+          description: "Aporte: Viagem",
+          goalId: "trip",
+        }),
+      ],
+    });
+
+    const { result } = renderModel(createFakeTasksData(), finance, [trip]);
+
+    await waitFor(() => expect(result.current.state.status).toBe("ready"));
+    expect(result.current.state).toMatchObject({
+      focusGoal: { status: "in-focus", title: "Viagem", percentText: "40%" },
+    });
+  });
+
+  it("sem metas, a meta em foco avisa que não há nenhuma", async () => {
+    const { result } = renderModel(createFakeTasksData());
+
+    await waitFor(() => expect(result.current.state.status).toBe("ready"));
+    expect(result.current.state).toMatchObject({ focusGoal: { status: "no-goals" } });
   });
 
   it("sem saldo inicial, não inventa saldo em conta", async () => {

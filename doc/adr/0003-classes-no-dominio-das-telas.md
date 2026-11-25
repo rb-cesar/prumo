@@ -44,6 +44,10 @@ Dois acertos de localização, que o ADR 0001 e o §11.3 ainda descrevem de outr
   (com o painel e o ritmo, que só ela mostra), como manda o §6.3. A mesma coisa vale para a linha
   de pendência (`FocusTaskRow`) e para os textos de prazo (`TodayAgenda`), que repetem os de
   `pages/tasks/`. Na terceira tela, sobem para `shared/`.
+- Na fatia 5, `Goal` e `GoalProgress` (guardado, porcentagem e prazo de uma meta) já nascem em
+  `shared/goals/domain/`, porque a tela de metas e a tela Hoje ("Meta em foco") usam as duas desde o
+  começo (§6.3: peça criada para várias telas nasce em `shared/`). Ficam em `pages/goals/domain/` só
+  `GoalBoard` (abas e ordem) e `RequiredPace` (ritmo), e em `pages/today/domain/`, `FocusGoal`.
 - `Money` existe nas duas telas, com regras diferentes (finanças aceita zero; pendência não). Sobe
   para `shared/` na terceira tela (§6.3).
 - **Quando rever:** se uma classe crescer a ponto de juntar dois assuntos, divide-se em duas.

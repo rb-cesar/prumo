@@ -18,11 +18,14 @@ export type TransactionRecord = {
   envelopeId: string | null;
   /** A pendência que gerou este lançamento ao ser concluída; `null` se foi digitado à mão. */
   taskId: string | null;
+  /** Só o aporte tem meta (goals.md, BR-M03); continua preenchido se a meta for excluída. */
+  goalId: string | null;
 };
 
-export type NewTransactionInput = Omit<TransactionRecord, "envelopeId" | "taskId"> & {
+export type NewTransactionInput = Omit<TransactionRecord, "envelopeId" | "taskId" | "goalId"> & {
   envelopeId?: string | null;
   taskId?: string | null;
+  goalId?: string | null;
 };
 
 function validatedSnapshot(snapshot: TransactionRecord): TransactionRecord {
@@ -42,6 +45,9 @@ function validatedSnapshot(snapshot: TransactionRecord): TransactionRecord {
   if (!isExpense && snapshot.envelopeId !== null) {
     throw new FinanceRuleViolation("envelope-only-for-expense");
   }
+  if (snapshot.kind !== "saving" && snapshot.goalId !== null) {
+    throw new FinanceRuleViolation("goal-only-for-saving");
+  }
 
   return { ...snapshot, description };
 }
@@ -59,6 +65,7 @@ export class Transaction {
       ...input,
       envelopeId: input.envelopeId ?? null,
       taskId: input.taskId ?? null,
+      goalId: input.goalId ?? null,
     });
   }
 
@@ -91,5 +98,8 @@ export class Transaction {
   }
   get taskId(): string | null {
     return this.snapshot.taskId;
+  }
+  get goalId(): string | null {
+    return this.snapshot.goalId;
   }
 }

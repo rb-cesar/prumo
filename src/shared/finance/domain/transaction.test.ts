@@ -15,7 +15,32 @@ describe("Transaction: criação (BR-F03)", () => {
   it("cria um gasto com envelope", () => {
     const transaction = Transaction.create(buyGroceries);
 
-    expect(transaction.toRecord()).toEqual({ ...buyGroceries, taskId: null });
+    expect(transaction.toRecord()).toEqual({ ...buyGroceries, taskId: null, goalId: null });
+  });
+
+  it("guarda de qual meta o aporte é", () => {
+    const transaction = Transaction.create({
+      id: "tx-9",
+      kind: "saving",
+      amountInCents: 10000,
+      date: "2026-11-12",
+      description: "Aporte: Viagem",
+      goalId: "trip",
+    });
+
+    expect(transaction.goalId).toBe("trip");
+  });
+
+  it.each(["expense", "income"] as const)("recusa meta em %s", (kind) => {
+    const build = () =>
+      Transaction.create({
+        ...buyGroceries,
+        kind,
+        envelopeId: kind === "expense" ? "groceries" : null,
+        goalId: "trip",
+      });
+
+    expect(build).toThrow(new FinanceRuleViolation("goal-only-for-saving"));
   });
 
   it("guarda de qual pendência o lançamento veio", () => {

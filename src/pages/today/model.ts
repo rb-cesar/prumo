@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { type GoalsData, goalsKeys } from "../../data/goals";
 import { type TasksData, tasksKeys } from "../../data/tasks";
 import type { TransactionsData } from "../../data/transactions";
 import type { Clock } from "../../infra/clock";
@@ -15,12 +16,15 @@ import {
   CycleProgress,
   type CycleProgressView,
   EverydayBudget,
+  FocusGoal,
+  type FocusGoalView,
   type FocusRowView,
   TodayAgenda,
   type UpcomingRowView,
 } from "./domain";
 
 export type TodayModelDeps = {
+  goals: GoalsData;
   tasks: TasksData;
   transactions: TransactionsData;
   clock: Clock;
@@ -39,9 +43,11 @@ export type TodayScreenState =
       focusRows: FocusRowView[];
       cycle: CycleProgressView;
       upcomingRows: UpcomingRowView[];
+      focusGoal: FocusGoalView;
     };
 
 export function useTodayModel({
+  goals: goalsData,
   tasks: tasksData,
   transactions: transactionsData,
   clock,
@@ -61,14 +67,18 @@ export function useTodayModel({
     queryFn: () => tasksData.list(),
   });
 
+  const goalsQuery = useQuery({ queryKey: goalsKeys.all, queryFn: () => goalsData.listGoals() });
+
   // BR-T08: o que sobrou de um ciclo que acabou já conta como backlog. Aqui só se lê; quem grava a
   // devolução é a tela de pendências.
   const currentCycle = Cycle.containing(today);
   const settledTasks = (tasksQuery.data ?? []).map((task) => task.settledFor(currentCycle));
 
   const state: TodayScreenState = (() => {
-    if (financeQuery.isPending || tasksQuery.isPending) return { status: "loading" } as const;
-    if (financeQuery.isError || tasksQuery.isError) {
+    if (financeQuery.isPending || tasksQuery.isPending || goalsQuery.isPending) {
+      return { status: "loading" } as const;
+    }
+    if (financeQuery.isError || tasksQuery.isError || goalsQuery.isError) {
       return { status: "error", reason: "data-unavailable" } as const;
     }
 
@@ -92,6 +102,7 @@ export function useTodayModel({
       focusRows: agenda.toFocusRowViews(),
       cycle: new CycleProgress(settledTasks, today).toView(),
       upcomingRows: agenda.toUpcomingRowViews(),
+      focusGoal: new FocusGoal(goalsQuery.data, transactions, today).toView(),
     } as const;
   })();
 

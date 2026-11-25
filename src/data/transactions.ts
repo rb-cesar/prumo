@@ -38,6 +38,7 @@ const transactionRowSchema = z.object({
   description: z.string(),
   envelope_id: z.string().nullable(),
   task_id: z.string().nullable(),
+  goal_id: z.string().nullable(),
 });
 
 const openingBalanceRowSchema = z.object({ opening_balance_in_cents: z.number().int() });
@@ -63,6 +64,7 @@ function transactionFromRow(unknownRow: unknown): Transaction {
     description: row.description,
     envelopeId: row.envelope_id,
     taskId: row.task_id,
+    goalId: row.goal_id,
   });
 }
 
@@ -83,7 +85,7 @@ export function createSqliteTransactionsData(
 
     async listTransactions() {
       const rows = await database.queryAll<unknown>(
-        `SELECT id, kind, amount_in_cents, date, description, envelope_id, task_id
+        `SELECT id, kind, amount_in_cents, date, description, envelope_id, task_id, goal_id
            FROM transactions WHERE deleted_at IS NULL`,
       );
       return rows.map(transactionFromRow);
@@ -93,12 +95,13 @@ export function createSqliteTransactionsData(
       const record = transaction.toRecord();
       await database.run(
         `INSERT INTO transactions (id, kind, amount_in_cents, date, description, envelope_id,
-                                   task_id, updated_at, deleted_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)
+                                   task_id, goal_id, updated_at, deleted_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)
          ON CONFLICT (id) DO UPDATE SET
            kind = excluded.kind, amount_in_cents = excluded.amount_in_cents, date = excluded.date,
            description = excluded.description, envelope_id = excluded.envelope_id,
-           task_id = excluded.task_id, updated_at = excluded.updated_at, deleted_at = NULL`,
+           task_id = excluded.task_id, goal_id = excluded.goal_id,
+           updated_at = excluded.updated_at, deleted_at = NULL`,
         [
           record.id,
           record.kind,
@@ -107,6 +110,7 @@ export function createSqliteTransactionsData(
           record.description,
           record.envelopeId,
           record.taskId,
+          record.goalId,
           clock.now().toISOString(),
         ],
       );
