@@ -50,6 +50,7 @@ describe("TaskCompletion.toTransaction", () => {
       description: "Fazer a feira da semana",
       envelopeId: "groceries",
       taskId: "task-1",
+      goalId: null,
     });
   });
 

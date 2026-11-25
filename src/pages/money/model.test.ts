@@ -147,6 +147,7 @@ describe("useMoneyModel: ações", () => {
       description: "Almoço",
       envelopeId: "groceries",
       taskId: null,
+      goalId: null,
     });
   });
 

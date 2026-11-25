@@ -16,6 +16,8 @@ export const tasksKeys = {
   all: ["tasks"] as const,
   /** As pendências que a tela de finanças lê; cai junto quando `all` é invalidada. */
   withMoney: ["tasks", "with-money"] as const,
+  /** As pendências que a tela Hoje lê, sem gravar nada; cai junto quando `all` é invalidada. */
+  forToday: ["tasks", "for-today"] as const,
 };
 
 // ---------------------------------------------------------------- linha do banco

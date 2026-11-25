@@ -450,8 +450,8 @@ prumo/
    ├─ pages/                          uma pasta por rota; cada uma: *-page.tsx · model.ts · domain · components/ · testes
    │  ├─ tasks/                       tasks-page.tsx · model.ts · domain/ (TaskList, TaskDisplay, Money) · components/   F1
    │  ├─ money/                       money-page.tsx · model.ts · domain/ (EverydayBudget, Payables) · components/   F2
-   │  ├─ today/                       today-page.tsx · model.ts · domain.ts (visão do dia)                     F4
-   │  ├─ goals/                       goals-page.tsx · model.ts · domain.ts (classe Goal e ritmo)              F5
+   │  ├─ today/                       today-page.tsx · model.ts · domain/ (EverydayBudget, TodayAgenda, CycleProgress) · components/   F4
+   │  ├─ goals/                       goals-page.tsx · model.ts · domain/ (GoalBoard, RequiredPace) · components/   F5
    │  └─ history/                     history-page.tsx · model.ts · domain.ts (visões derivadas)               F6
    │
    ├─ shared/                         regra ou utilitário de duas ou mais telas, sem ser visual
@@ -464,12 +464,16 @@ prumo/
    │  │  │  └─ cycle.ts · cycle.test.ts     classe Cycle
    │  │  ├─ task-completion.ts · task-completion.test.ts   (em domain/) o lançamento que concluir gera e o efeito dele
    │  │  └─ use-complete-task.ts · complete-task-sheet.tsx   concluir com valor lança no envelope; reabrir remove   F3
-   │  └─ finance/
-   │     └─ domain/                   pasta: dois conceitos que não se chamam                             F2
-   │        ├─ envelope.ts · envelope.test.ts          classe Envelope (situação do envelope)
-   │        ├─ transaction.ts · transaction.test.ts    classe Transaction (lançamento)
-   │        ├─ ledger.ts · ledger.test.ts              classe Ledger (contas sobre os lançamentos)
-   │        └─ money.ts · money.test.ts                classe Money (ler e mostrar valor)
+   │  ├─ finance/
+   │  │  └─ domain/                   pasta: dois conceitos que não se chamam                             F2
+   │  │     ├─ envelope.ts · envelope.test.ts          classe Envelope (situação do envelope)
+   │  │     ├─ transaction.ts · transaction.test.ts    classe Transaction (lançamento)
+   │  │     ├─ ledger.ts · ledger.test.ts              classe Ledger (contas sobre os lançamentos)
+   │  │     └─ money.ts · money.test.ts                classe Money (ler e mostrar valor)
+   │  └─ goals/
+   │     └─ domain/                   pasta: meta e o que se calcula dela para várias telas               F5
+   │        ├─ goal.ts · goal.test.ts                  classe Goal (meta de guardar)
+   │        └─ goal-progress.ts · goal-progress.test.ts  classe GoalProgress (guardado, prazo, texto)
    │
    ├─ data/                           único lugar com SQL. Cada arquivo: interface + adaptador SQLite
    │  │                               + fake + schema Zod + chaves de consulta

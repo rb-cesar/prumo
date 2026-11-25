@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
+import { createFakeGoalsData } from "../../data/goals";
 import { createFakeTasksData } from "../../data/tasks";
 import { createFakeTransactionsData } from "../../data/transactions";
 import { createFixedClock } from "../../infra/clock";
@@ -25,6 +26,7 @@ function renderPage(seed: Task[] = []) {
   const tasks = createFakeTasksData(seed);
   const transactions = createFakeTransactionsData({ envelopes: [groceries] });
   const services = {
+    goals: createFakeGoalsData(),
     tasks,
     transactions,
     clock: createFixedClock(today),
