@@ -10,7 +10,7 @@ import { ServicesProvider } from "./shared/services";
 afterEach(cleanup);
 
 describe("App", () => {
-  it("abre na tela de pendências", () => {
+  it("abre na tela Hoje", () => {
     const services = {
       tasks: createFakeTasksData(),
       transactions: createFakeTransactionsData(),
@@ -27,6 +27,6 @@ describe("App", () => {
       </QueryClientProvider>,
     );
 
-    expect(screen.getByRole("heading", { name: "Pendências" })).not.toBeNull();
+    expect(screen.getByRole("heading", { name: "Hoje" })).not.toBeNull();
   });
 });

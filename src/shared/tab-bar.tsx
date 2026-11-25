@@ -2,7 +2,8 @@ import { NavLink } from "react-router-dom";
 import { Icon } from "./icon";
 
 const TABS = [
-  { path: "/", label: "Pendências", icon: "tasks" },
+  { path: "/", label: "Hoje", icon: "today" },
+  { path: "/tasks", label: "Pendências", icon: "tasks" },
   { path: "/money", label: "Finanças", icon: "money" },
 ] as const;
 

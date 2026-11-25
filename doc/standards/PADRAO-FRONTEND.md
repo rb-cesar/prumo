@@ -450,7 +450,7 @@ prumo/
    ├─ pages/                          uma pasta por rota; cada uma: *-page.tsx · model.ts · domain · components/ · testes
    │  ├─ tasks/                       tasks-page.tsx · model.ts · domain/ (TaskList, TaskDisplay, Money) · components/   F1
    │  ├─ money/                       money-page.tsx · model.ts · domain/ (EverydayBudget, Payables) · components/   F2
-   │  ├─ today/                       today-page.tsx · model.ts · domain.ts (visão do dia)                     F4
+   │  ├─ today/                       today-page.tsx · model.ts · domain/ (EverydayBudget, TodayAgenda, CycleProgress) · components/   F4
    │  ├─ goals/                       goals-page.tsx · model.ts · domain.ts (classe Goal e ritmo)              F5
    │  └─ history/                     history-page.tsx · model.ts · domain.ts (visões derivadas)               F6
    │

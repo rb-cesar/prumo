@@ -2,6 +2,8 @@
 const ICON_PATHS = {
   check: '<path d="m6 12.5 4 4 8-9"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
+  today:
+    '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>',
   tasks: '<circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.3 2.4 2.4 4.6-5"/>',
   money:
     '<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3.5"/><rect x="3.5" y="8" width="17" height="12" rx="2.5"/><circle cx="16.5" cy="14" r="1.2"/>',
