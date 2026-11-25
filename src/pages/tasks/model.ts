@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import type { CyclesData } from "../../data/cycles";
 import { type TasksData, tasksKeys } from "../../data/tasks";
 import type { TransactionsData } from "../../data/transactions";
 import type { Clock } from "../../infra/clock";
@@ -15,10 +16,12 @@ import {
   TaskRuleViolation,
   type TaskRuleViolationReason,
 } from "../../shared/tasks/domain/task-rule-violation";
+import { loadSettledTasks } from "../../shared/tasks/settle-ended-cycles";
 import { useCompleteTask } from "../../shared/tasks/use-complete-task";
 import { Money, type TaskFilter, TaskList, type TaskRowView, type TaskScope } from "./domain";
 
 export type TasksModelDeps = {
+  cycles: CyclesData;
   tasks: TasksData;
   transactions: TransactionsData;
   clock: Clock;
@@ -52,16 +55,8 @@ export type CreateTaskResult =
   | { ok: true }
   | { ok: false; reason: TaskRuleViolationReason | "amount-not-a-number" };
 
-/** BR-T08: lê as pendências e devolve ao backlog, gravando, as que sobraram de um ciclo que acabou. */
-async function loadSettledTasks(tasksData: TasksData, currentCycle: Cycle): Promise<Task[]> {
-  const stored = await tasksData.list();
-  const settled = stored.map((task) => task.settledFor(currentCycle));
-  const changed = settled.filter((task, index) => task !== stored[index]);
-  await Promise.all(changed.map((task) => tasksData.save(task)));
-  return settled;
-}
-
 export function useTasksModel({
+  cycles: cyclesData,
   tasks: tasksData,
   transactions: transactionsData,
   clock,
@@ -83,7 +78,8 @@ export function useTasksModel({
 
   const tasksQuery = useQuery({
     queryKey: tasksKeys.all,
-    queryFn: () => loadSettledTasks(tasksData, Cycle.containing(clock.today())),
+    queryFn: () =>
+      loadSettledTasks({ tasks: tasksData, cycles: cyclesData }, Cycle.containing(clock.today())),
   });
 
   const saveTask = useMutation({

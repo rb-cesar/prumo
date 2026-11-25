@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
+import { createFakeCyclesData } from "../../data/cycles";
 import { createFakeGoalsData } from "../../data/goals";
 import { createFakeTasksData } from "../../data/tasks";
 import { createFakeTransactionsData } from "../../data/transactions";
@@ -30,6 +31,7 @@ const trip = Goal.fromRecord({
 function renderPage(seedGoals: Goal[] = []) {
   const transactions = createFakeTransactionsData();
   const services = {
+    cycles: createFakeCyclesData(),
     goals: createFakeGoalsData(seedGoals),
     tasks: createFakeTasksData(),
     transactions,

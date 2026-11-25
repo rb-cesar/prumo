@@ -1,11 +1,13 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
+import { createFakeCyclesData } from "../../data/cycles";
 import { createFakeGoalsData } from "../../data/goals";
 import { createFakeTasksData } from "../../data/tasks";
 import { createFakeTransactionsData } from "../../data/transactions";
 import { createFixedClock } from "../../infra/clock";
 import { Envelope } from "../../shared/finance/domain/envelope";
+import { Transaction } from "../../shared/finance/domain/transaction";
 import { ServicesProvider } from "../../shared/services";
 import { Cycle } from "../../shared/tasks/domain/cycle";
 import { Task } from "../../shared/tasks/domain/task";
@@ -21,12 +23,24 @@ const groceries = Envelope.fromRecord({
   isFixed: false,
 });
 
-function renderPage(tasks: Task[] = []) {
-  const transactions = createFakeTransactionsData({
+function renderPage(tasks: Task[] = [], cycles = createFakeCyclesData()) {
+  return renderPageWith({ tasks, cycles });
+}
+
+function renderPageWith({
+  tasks = [],
+  cycles = createFakeCyclesData(),
+  transactions = createFakeTransactionsData({
     envelopes: [groceries],
     openingBalanceInCents: 0,
-  });
+  }),
+}: {
+  tasks?: Task[];
+  cycles?: ReturnType<typeof createFakeCyclesData>;
+  transactions?: ReturnType<typeof createFakeTransactionsData>;
+}) {
   const services = {
+    cycles,
     goals: createFakeGoalsData(),
     tasks: createFakeTasksData(tasks),
     transactions,
@@ -100,5 +114,54 @@ describe("TodayPage", () => {
 
     expect(await screen.findByText("Receber o freela")).not.toBeNull();
     expect(screen.getByText("+R$ 800,00")).not.toBeNull();
+  });
+  it("mostra o gasto do dia a dia na semana contra o plano semanal", async () => {
+    const transactions = createFakeTransactionsData({
+      envelopes: [groceries],
+      transactions: [
+        Transaction.create({
+          id: "tx-1",
+          kind: "expense",
+          amountInCents: 30000,
+          date: "2026-11-10",
+          description: "Mercado",
+          envelopeId: "groceries",
+        }),
+      ],
+      openingBalanceInCents: 0,
+    });
+    renderPageWith({ transactions });
+
+    expect(await screen.findByText("Gasto do dia a dia na semana")).not.toBeNull();
+    // Plano: R$ 1.100 ÷ 30 × 7 = R$ 256,66, mostrado como R$ 257.
+    expect(screen.getByText("R$ 300 de R$ 257")).not.toBeNull();
+  });
+
+  it("revisa o ciclo: pede pelo menos uma resposta, salva e troca o botão pelo aviso", async () => {
+    const cycles = createFakeCyclesData();
+    renderPage([], cycles);
+    fireEvent.click(await screen.findByRole("button", { name: "Fazer a revisão do ciclo" }));
+    const sheet = await screen.findByRole("dialog", { name: "Revisão do ciclo 8 a 14 nov" });
+
+    fireEvent.click(within(sheet).getByRole("button", { name: "Salvar revisão" }));
+    expect((await within(sheet).findByRole("alert")).textContent).toBe(
+      "Responda pelo menos uma pergunta para salvar a revisão.",
+    );
+
+    fireEvent.change(within(sheet).getByLabelText("O que funcionou?"), {
+      target: { value: "Planejei na segunda" },
+    });
+    fireEvent.click(within(sheet).getByRole("button", { name: "Salvar revisão" }));
+
+    expect(await screen.findByText("Revisão do ciclo salva.")).not.toBeNull();
+    expect(screen.queryByRole("button", { name: "Fazer a revisão do ciclo" })).toBeNull();
+    const [review] = await cycles.listReviews();
+    expect(review?.toRecord()).toEqual({
+      cycleStart: "2026-11-08",
+      worked: "Planejei na segunda",
+      hindered: "—",
+      changeNext: "—",
+      savedOn: today,
+    });
   });
 });

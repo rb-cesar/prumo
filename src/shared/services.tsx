@@ -1,4 +1,5 @@
 import { createContext, type ReactNode, useContext } from "react";
+import type { CyclesData } from "../data/cycles";
 import type { GoalsData } from "../data/goals";
 import type { TasksData } from "../data/tasks";
 import type { TransactionsData } from "../data/transactions";
@@ -7,6 +8,7 @@ import type { IdGenerator } from "./ids";
 
 /** O mundo real, criado uma vez no `main.tsx`. Os testes entregam um fake no mesmo ponto. */
 export type Services = {
+  cycles: CyclesData;
   goals: GoalsData;
   tasks: TasksData;
   transactions: TransactionsData;

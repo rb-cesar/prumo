@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./app";
+import { createSqliteCyclesData } from "./data/cycles";
 import { createSqliteGoalsData } from "./data/goals";
 import { createSqliteTasksData } from "./data/tasks";
 import { createSqliteTransactionsData } from "./data/transactions";
@@ -22,6 +23,7 @@ async function start(rootElement: HTMLElement): Promise<void> {
     const database = await openDeviceDatabase();
     await runMigrations(database, bundledMigrations);
     const services = {
+      cycles: createSqliteCyclesData(database, systemClock),
       goals: createSqliteGoalsData(database, systemClock),
       tasks: createSqliteTasksData(database, systemClock),
       transactions: createSqliteTransactionsData(database, systemClock),

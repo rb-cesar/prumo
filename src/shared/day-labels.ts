@@ -41,6 +41,11 @@ export function describeDay(isoDate: string, today: string): string {
   return `${WEEKDAY_NAMES_SHORT[date.getUTCDay()]}, ${date.getUTCDate()} ${MONTH_NAMES_SHORT[date.getUTCMonth()]}`;
 }
 
+/** "nov": o nome curto do mês, para gráficos e tabelas. */
+export function shortMonthName(isoDate: string): string {
+  return MONTH_NAMES_SHORT[parseIsoDate(isoDate).getUTCMonth()] ?? "";
+}
+
 /** Nome do mês sozinho, como em "Envelopes de novembro". */
 export function monthName(isoDate: string): string {
   return MONTH_NAMES_LONG[parseIsoDate(isoDate).getUTCMonth()] ?? "";

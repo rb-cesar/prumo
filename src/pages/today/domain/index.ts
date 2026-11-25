@@ -7,3 +7,5 @@ export type { FocusGoalView } from "./focus-goal";
 export { FocusGoal } from "./focus-goal";
 export type { ChipView, FocusRowView, UpcomingRowView } from "./today-agenda";
 export { TodayAgenda } from "./today-agenda";
+export type { WeeklySpendingView } from "./weekly-spending";
+export { WeeklySpending } from "./weekly-spending";

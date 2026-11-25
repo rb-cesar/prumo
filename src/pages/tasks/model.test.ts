@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { describe, expect, it } from "vitest";
+import { createFakeCyclesData } from "../../data/cycles";
 import { createFakeTasksData, type TasksData } from "../../data/tasks";
 import { createFakeTransactionsData } from "../../data/transactions";
 import { createFixedClock } from "../../infra/clock";
@@ -21,6 +22,7 @@ function createWrapper() {
 function createDeps(tasks: TasksData): TasksModelDeps {
   let nextId = 1;
   return {
+    cycles: createFakeCyclesData(),
     tasks,
     transactions: createFakeTransactionsData(),
     clock: createFixedClock(today),

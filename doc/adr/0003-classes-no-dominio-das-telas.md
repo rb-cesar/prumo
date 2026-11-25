@@ -48,6 +48,12 @@ Dois acertos de localização, que o ADR 0001 e o §11.3 ainda descrevem de outr
   `shared/goals/domain/`, porque a tela de metas e a tela Hoje ("Meta em foco") usam as duas desde o
   começo (§6.3: peça criada para várias telas nasce em `shared/`). Ficam em `pages/goals/domain/` só
   `GoalBoard` (abas e ordem) e `RequiredPace` (ritmo), e em `pages/today/domain/`, `FocusGoal`.
+- Na fatia 6, `WeeklyPlan` (plano semanal do dia a dia) e `CycleReview` (revisão do ciclo) nascem em
+  `shared/` porque Hoje e Histórico os usam desde o começo. O cálculo do gasto da semana existe
+  duas vezes, em `pages/today/domain/WeeklySpending` e em `pages/history/domain/CycleHistory`
+  (segunda tela copia, §6.3). A leitura que devolve ao backlog e anota o fechamento do ciclo
+  (`shared/tasks/settle-ended-cycles.ts`) é função e não classe: faz entrada e saída, não é regra
+  pura, e as três telas que leem pendências chamam a mesma.
 - `Money` existe nas duas telas, com regras diferentes (finanças aceita zero; pendência não). Sobe
   para `shared/` na terceira tela (§6.3).
 - **Quando rever:** se uma classe crescer a ponto de juntar dois assuntos, divide-se em duas.
